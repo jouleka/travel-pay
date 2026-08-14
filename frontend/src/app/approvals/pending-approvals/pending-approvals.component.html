@@ -1,71 +1,73 @@
 <div class="pending-approvals-container">
   <h1 class="page-title">Pending Approvals</h1>
 
-  <div *ngIf="loading" class="loading-container">
-    <mat-spinner diameter="40"></mat-spinner>
-  </div>
+  @if (loading) {
+    <div class="loading-container">
+      <mat-spinner diameter="40"></mat-spinner>
+    </div>
+  }
 
   <button mat-icon-button routerLink="/dashboard" aria-label="Back to dashboard">
     <mat-icon>arrow_back</mat-icon>
   </button>
 
-  <mat-card *ngIf="!loading">
-    <mat-card-content>
-      <div *ngIf="pendingApprovals.length === 0" class="empty-state">
-        <p>No pending approvals at this time.</p>
-      </div>
-
-      <table mat-table [dataSource]="filteredApprovals" matSort (matSortChange)="sortData($event)" *ngIf="pendingApprovals.length > 0">
-        <!-- ID Column -->
-        <ng-container matColumnDef="id">
-          <th mat-header-cell *matHeaderCellDef mat-sort-header>ID</th>
-          <td mat-cell *matCellDef="let trip">{{ trip.id }}</td>
-        </ng-container>
-
-        <!-- Name Column -->
-        <ng-container matColumnDef="name">
-          <th mat-header-cell *matHeaderCellDef mat-sort-header>Trip Name</th>
-          <td mat-cell *matCellDef="let trip">{{ trip.name }}</td>
-        </ng-container>
-
-        <!-- Start Date Column -->
-        <ng-container matColumnDef="startDate">
-          <th mat-header-cell *matHeaderCellDef mat-sort-header>Start Date</th>
-          <td mat-cell *matCellDef="let trip">{{ trip.startDate | date:'mediumDate' }}</td>
-        </ng-container>
-
-        <!-- End Date Column -->
-        <ng-container matColumnDef="endDate">
-          <th mat-header-cell *matHeaderCellDef mat-sort-header>End Date</th>
-          <td mat-cell *matCellDef="let trip">{{ trip.endDate | date:'mediumDate' }}</td>
-        </ng-container>
-
-        <!-- Total Amount Column -->
-        <ng-container matColumnDef="totalExpenses">
-          <th mat-header-cell *matHeaderCellDef mat-sort-header>Total Amount</th>
-          <td mat-cell *matCellDef="let trip">{{ trip.totalExpenses | currency }}</td>
-        </ng-container>
-
-        <!-- Actions Column -->
-        <ng-container matColumnDef="actions">
-          <th mat-header-cell *matHeaderCellDef>Actions</th>
-          <td mat-cell *matCellDef="let trip">
-            <button mat-icon-button color="primary" [routerLink]="['/approvals', trip.id]" matTooltip="Review Trip">
-              <mat-icon>visibility</mat-icon>
-            </button>
-          </td>
-        </ng-container>
-
-        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-      </table>
-
-      <mat-paginator *ngIf="pendingApprovals.length > 0"
-                     [length]="totalTrips"
-                     [pageSize]="pageSize"
-                     [pageSizeOptions]="[5, 10, 25, 100]"
-                     (page)="onPageChange($event)">
-      </mat-paginator>
-    </mat-card-content>
-  </mat-card>
+  @if (!loading) {
+    <mat-card>
+      <mat-card-content>
+        @if (pendingApprovals.length === 0) {
+          <div class="empty-state">
+            <p>No pending approvals at this time.</p>
+          </div>
+        }
+        @if (pendingApprovals.length > 0) {
+          <table mat-table [dataSource]="filteredApprovals" matSort (matSortChange)="sortData($event)">
+            <!-- ID Column -->
+            <ng-container matColumnDef="id">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>ID</th>
+              <td mat-cell *matCellDef="let trip">{{ trip.id }}</td>
+            </ng-container>
+            <!-- Name Column -->
+            <ng-container matColumnDef="name">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Trip Name</th>
+              <td mat-cell *matCellDef="let trip">{{ trip.name }}</td>
+            </ng-container>
+            <!-- Start Date Column -->
+            <ng-container matColumnDef="startDate">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Start Date</th>
+              <td mat-cell *matCellDef="let trip">{{ trip.startDate | date:'mediumDate' }}</td>
+            </ng-container>
+            <!-- End Date Column -->
+            <ng-container matColumnDef="endDate">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>End Date</th>
+              <td mat-cell *matCellDef="let trip">{{ trip.endDate | date:'mediumDate' }}</td>
+            </ng-container>
+            <!-- Total Amount Column -->
+            <ng-container matColumnDef="totalExpenses">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Total Amount</th>
+              <td mat-cell *matCellDef="let trip">{{ trip.totalExpenses | currency }}</td>
+            </ng-container>
+            <!-- Actions Column -->
+            <ng-container matColumnDef="actions">
+              <th mat-header-cell *matHeaderCellDef>Actions</th>
+              <td mat-cell *matCellDef="let trip">
+                <button mat-icon-button color="primary" [routerLink]="['/approvals', trip.id]" matTooltip="Review Trip">
+                  <mat-icon>visibility</mat-icon>
+                </button>
+              </td>
+            </ng-container>
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+          </table>
+        }
+        @if (pendingApprovals.length > 0) {
+          <mat-paginator
+            [length]="totalTrips"
+            [pageSize]="pageSize"
+            [pageSizeOptions]="[5, 10, 25, 100]"
+            (page)="onPageChange($event)">
+          </mat-paginator>
+        }
+      </mat-card-content>
+    </mat-card>
+  }
 </div>

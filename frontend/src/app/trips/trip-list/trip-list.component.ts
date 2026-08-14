@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { MatTableModule } from '@angular/material/table';
@@ -31,6 +31,7 @@ import { Trip, TripStatus } from '../models/trip.model';
     MatProgressSpinnerModule
   ],
   templateUrl: './trip-list.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./trip-list.component.scss']
 })
 export class TripListComponent implements OnInit {

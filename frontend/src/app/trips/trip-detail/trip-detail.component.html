@@ -1,210 +1,222 @@
 <div class="trip-detail-container">
-  <div *ngIf="loading" class="loading-container">
-    <mat-spinner diameter="40"></mat-spinner>
-  </div>
-
-  <div *ngIf="!loading && trip">
-    <div class="header-actions">
-      <button mat-button routerLink="/trips">
-        <mat-icon>arrow_back</mat-icon> Back to Trips
-      </button>
-
-      <div class="spacer"></div>
-
-      <button mat-raised-button color="primary" [routerLink]="['/trips', trip.id, 'edit']"
-              *ngIf="canEditTrip()">
-        <mat-icon>edit</mat-icon> Edit Trip
-      </button>
-
-      <button mat-raised-button color="accent" (click)="submitForApproval()"
-              *ngIf="canEditTrip() && trip.expenses.length > 0">
-        <mat-icon>send</mat-icon> Submit for Approval
-      </button>
+  @if (loading) {
+    <div class="loading-container">
+      <mat-spinner diameter="40"></mat-spinner>
     </div>
+  }
 
-    <mat-card class="trip-card">
-      <mat-card-header>
-        <mat-card-title>{{ trip.name }}</mat-card-title>
-        <mat-card-subtitle>
-          <div class="date-range">
-            {{ trip.startDate | date:'mediumDate' }} - {{ trip.endDate | date:'mediumDate' }}
-          </div>
-          <mat-chip [ngClass]="getStatusClass(trip.status)" class="status-chip">
-            {{ trip.status.replace('_', ' ') }}
-          </mat-chip>
-        </mat-card-subtitle>
-      </mat-card-header>
-
-      <mat-divider></mat-divider>
-
-      <mat-card-content>
-        <mat-tab-group>
-          <mat-tab label="Trip Details">
-            <div class="tab-content">
-              <div class="trip-info">
-                <div class="info-row">
-                  <span class="label">Total Amount:</span>
-                  <span class="value">{{ trip.totalExpenses | currency }}</span>
-                </div>
-
-                <div class="info-row">
-                  <span class="label">Created:</span>
-                  <span class="value">{{ trip.createdAt | date:'medium' }}</span>
-                </div>
-
-                <div class="info-row" *ngIf="trip.updatedAt !== trip.createdAt">
-                  <span class="label">Last Updated:</span>
-                  <span class="value">{{ trip.updatedAt | date:'medium' }}</span>
-                </div>
-              </div>
+  @if (!loading && trip) {
+    <div>
+      <div class="header-actions">
+        <button mat-button routerLink="/trips">
+          <mat-icon>arrow_back</mat-icon> Back to Trips
+        </button>
+        <div class="spacer"></div>
+        @if (canEditTrip()) {
+          <button mat-raised-button color="primary" [routerLink]="['/trips', trip.id, 'edit']"
+            >
+            <mat-icon>edit</mat-icon> Edit Trip
+          </button>
+        }
+        @if (canEditTrip() && trip.expenses.length > 0) {
+          <button mat-raised-button color="accent" (click)="submitForApproval()"
+            >
+            <mat-icon>send</mat-icon> Submit for Approval
+          </button>
+        }
+      </div>
+      <mat-card class="trip-card">
+        <mat-card-header>
+          <mat-card-title>{{ trip.name }}</mat-card-title>
+          <mat-card-subtitle>
+            <div class="date-range">
+              {{ trip.startDate | date:'mediumDate' }} - {{ trip.endDate | date:'mediumDate' }}
             </div>
-          </mat-tab>
-
-          <mat-tab label="Expenses ({{ trip.expenses.length }})">
-            <div class="tab-content">
-              <div class="expenses-header" *ngIf="canEditTrip()">
-                <button mat-raised-button color="primary" [routerLink]="['/trips', trip.id, 'expenses', 'new']">
-                  <mat-icon>add</mat-icon> Add Expense
-                </button>
-              </div>
-
-              <div *ngIf="trip.expenses.length === 0" class="empty-state">
-                <p>No expenses added to this trip yet.</p>
-                <button mat-raised-button color="primary" [routerLink]="['/trips', trip.id, 'expenses', 'new']"
-                        *ngIf="canEditTrip()">
-                  <mat-icon>add</mat-icon> Add Your First Expense
-                </button>
-              </div>
-
-              <div *ngIf="trip.expenses.length > 0">
-                <mat-accordion>
-                  <mat-expansion-panel *ngFor="let expense of trip.expenses">
-                    <mat-expansion-panel-header>
-                      <mat-panel-title>
-                        <mat-icon>{{ getExpenseTypeIcon(expense.type) }}</mat-icon>
-                        {{ expense.type.replace('_', ' ') }}
-                      </mat-panel-title>
-                      <mat-panel-description>
-                        {{ formatExpenseDetails(expense) }}
-                        <div class="expense-amount">{{ expense.totalPrice | currency }}</div>
-                      </mat-panel-description>
-                    </mat-expansion-panel-header>
-
-                    <div class="expense-detail-content">
-                      <!-- Content based on expense type -->
-                      <ng-container [ngSwitch]="expense.type">
-
-                        <div *ngSwitchCase="expenseType.CAR_RENTAL" class="expense-detail-grid">
-                          <div class="detail-row">
-                            <span class="label">Car Name:</span>
-                            <span class="value">{{ getCarRentalDetails(expense)?.carName }}</span>
-                          </div>
-                          <div class="detail-row">
-                            <span class="label">Pick-up Location:</span>
-                            <span class="value">{{ getCarRentalDetails(expense)?.pickupLocation }}</span>
-                          </div>
-                          <div class="detail-row">
-                            <span class="label">Drop-off Location:</span>
-                            <span class="value">{{ getCarRentalDetails(expense)?.dropLocation }}</span>
-                          </div>
-                          <div class="detail-row">
-                            <span class="label">Pick-up Date/Time:</span>
-                            <span class="value">{{ getCarRentalDetails(expense)?.pickupTime | date:'medium' }}</span>
-                          </div>
-                          <div class="detail-row">
-                            <span class="label">Drop-off Date/Time:</span>
-                            <span class="value">{{ getCarRentalDetails(expense)?.dropTime | date:'medium' }}</span>
-                          </div>
-                          <div class="detail-row">
-                            <span class="label">Total Price:</span>
-                            <span class="value">{{ expense.totalPrice | currency }}</span>
-                          </div>
-                        </div>
-
-                        <div *ngSwitchCase="expenseType.HOTEL" class="expense-detail-grid">
-                          <div class="detail-row">
-                            <span class="label">Hotel Name:</span>
-                            <span class="value">{{ getHotelDetails(expense)?.hotelName }}</span>
-                          </div>
-                          <div class="detail-row">
-                            <span class="label">Location:</span>
-                            <span class="value">{{ getHotelDetails(expense)?.location }}</span>
-                          </div>
-                          <div class="detail-row">
-                            <span class="label">Check-in Date:</span>
-                            <span class="value">{{ getHotelDetails(expense)?.checkInDate | date:'mediumDate' }}</span>
-                          </div>
-                          <div class="detail-row">
-                            <span class="label">Check-out Date:</span>
-                            <span class="value">{{ getHotelDetails(expense)?.checkOutDate | date:'mediumDate' }}</span>
-                          </div>
-                          <div class="detail-row">
-                            <span class="label">Total Price:</span>
-                            <span class="value">{{ expense.totalPrice | currency }}</span>
-                          </div>
-                        </div>
-
-                        <div *ngSwitchCase="expenseType.FLIGHT" class="expense-detail-grid">
-                          <div class="detail-row">
-                            <span class="label">Airline:</span>
-                            <span class="value">{{ getFlightDetails(expense)?.airline }}</span>
-                          </div>
-                          <div class="detail-row">
-                            <span class="label">From:</span>
-                            <span class="value">{{ getFlightDetails(expense)?.departureLocation }}</span>
-                          </div>
-                          <div class="detail-row">
-                            <span class="label">To:</span>
-                            <span class="value">{{ getFlightDetails(expense)?.arrivalLocation }}</span>
-                          </div>
-                          <div class="detail-row">
-                            <span class="label">Departure:</span>
-                            <span class="value">{{ getFlightDetails(expense)?.departureTime | date:'medium' }}</span>
-                          </div>
-                          <div class="detail-row">
-                            <span class="label">Arrival:</span>
-                            <span class="value">{{ getFlightDetails(expense)?.arrivalTime | date:'medium' }}</span>
-                          </div>
-                          <div class="detail-row">
-                            <span class="label">Total Price:</span>
-                            <span class="value">{{ expense.totalPrice | currency }}</span>
-                          </div>
-                        </div>
-
-                        <div *ngSwitchCase="expenseType.TAXI" class="expense-detail-grid">
-                          <div class="detail-row">
-                            <span class="label">From:</span>
-                            <span class="value">{{ getTaxiDetails(expense)?.from || getTaxiDetails(expense)?.fromLocation }}</span>
-                          </div>
-                          <div class="detail-row">
-                            <span class="label">To:</span>
-                            <span class="value">{{ getTaxiDetails(expense)?.to || getTaxiDetails(expense)?.toLocation }}</span>
-                          </div>
-                          <div class="detail-row">
-                            <span class="label">Date/Time:</span>
-                            <span class="value">{{ getTaxiDetails(expense)?.dateTime || getTaxiDetails(expense)?.time | date:'medium' }}</span>
-                          </div>
-                          <div class="detail-row">
-                            <span class="label">Total Price:</span>
-                            <span class="value">{{ expense.totalPrice | currency }}</span>
-                          </div>
-                        </div>
-
-                      </ng-container>
-
-                      <div class="expense-actions" *ngIf="canEditTrip()">
-                        <button mat-button color="warn" (click)="deleteExpense(expense.id || 0)">
-                          <mat-icon>delete</mat-icon> Delete
-                        </button>
-                      </div>
+            <mat-chip [ngClass]="getStatusClass(trip.status)" class="status-chip">
+              {{ trip.status.replace('_', ' ') }}
+            </mat-chip>
+          </mat-card-subtitle>
+        </mat-card-header>
+        <mat-divider></mat-divider>
+        <mat-card-content>
+          <mat-tab-group>
+            <mat-tab label="Trip Details">
+              <div class="tab-content">
+                <div class="trip-info">
+                  <div class="info-row">
+                    <span class="label">Total Amount:</span>
+                    <span class="value">{{ trip.totalExpenses | currency }}</span>
+                  </div>
+                  <div class="info-row">
+                    <span class="label">Created:</span>
+                    <span class="value">{{ trip.createdAt | date:'medium' }}</span>
+                  </div>
+                  @if (trip.updatedAt !== trip.createdAt) {
+                    <div class="info-row">
+                      <span class="label">Last Updated:</span>
+                      <span class="value">{{ trip.updatedAt | date:'medium' }}</span>
                     </div>
-                  </mat-expansion-panel>
-                </mat-accordion>
+                  }
+                </div>
               </div>
-            </div>
-          </mat-tab>
-        </mat-tab-group>
-      </mat-card-content>
-    </mat-card>
-  </div>
+            </mat-tab>
+            <mat-tab label="Expenses ({{ trip.expenses.length }})">
+              <div class="tab-content">
+                @if (canEditTrip()) {
+                  <div class="expenses-header">
+                    <button mat-raised-button color="primary" [routerLink]="['/trips', trip.id, 'expenses', 'new']">
+                      <mat-icon>add</mat-icon> Add Expense
+                    </button>
+                  </div>
+                }
+                @if (trip.expenses.length === 0) {
+                  <div class="empty-state">
+                    <p>No expenses added to this trip yet.</p>
+                    @if (canEditTrip()) {
+                      <button mat-raised-button color="primary" [routerLink]="['/trips', trip.id, 'expenses', 'new']"
+                        >
+                        <mat-icon>add</mat-icon> Add Your First Expense
+                      </button>
+                    }
+                  </div>
+                }
+                @if (trip.expenses.length > 0) {
+                  <div>
+                    <mat-accordion>
+                      @for (expense of trip.expenses; track expense) {
+                        <mat-expansion-panel>
+                          <mat-expansion-panel-header>
+                            <mat-panel-title>
+                              <mat-icon>{{ getExpenseTypeIcon(expense.type) }}</mat-icon>
+                              {{ expense.type.replace('_', ' ') }}
+                            </mat-panel-title>
+                            <mat-panel-description>
+                              {{ formatExpenseDetails(expense) }}
+                              <div class="expense-amount">{{ expense.totalPrice | currency }}</div>
+                            </mat-panel-description>
+                          </mat-expansion-panel-header>
+                          <div class="expense-detail-content">
+                            <!-- Content based on expense type -->
+                            @switch (expense.type) {
+                              @case (expenseType.CAR_RENTAL) {
+                                <div class="expense-detail-grid">
+                                  <div class="detail-row">
+                                    <span class="label">Car Name:</span>
+                                    <span class="value">{{ getCarRentalDetails(expense)?.carName }}</span>
+                                  </div>
+                                  <div class="detail-row">
+                                    <span class="label">Pick-up Location:</span>
+                                    <span class="value">{{ getCarRentalDetails(expense)?.pickupLocation }}</span>
+                                  </div>
+                                  <div class="detail-row">
+                                    <span class="label">Drop-off Location:</span>
+                                    <span class="value">{{ getCarRentalDetails(expense)?.dropLocation }}</span>
+                                  </div>
+                                  <div class="detail-row">
+                                    <span class="label">Pick-up Date/Time:</span>
+                                    <span class="value">{{ $safeNavigationMigration(getCarRentalDetails(expense)?.pickupTime) | date:'medium' }}</span>
+                                  </div>
+                                  <div class="detail-row">
+                                    <span class="label">Drop-off Date/Time:</span>
+                                    <span class="value">{{ $safeNavigationMigration(getCarRentalDetails(expense)?.dropTime) | date:'medium' }}</span>
+                                  </div>
+                                  <div class="detail-row">
+                                    <span class="label">Total Price:</span>
+                                    <span class="value">{{ expense.totalPrice | currency }}</span>
+                                  </div>
+                                </div>
+                              }
+                              @case (expenseType.HOTEL) {
+                                <div class="expense-detail-grid">
+                                  <div class="detail-row">
+                                    <span class="label">Hotel Name:</span>
+                                    <span class="value">{{ getHotelDetails(expense)?.hotelName }}</span>
+                                  </div>
+                                  <div class="detail-row">
+                                    <span class="label">Location:</span>
+                                    <span class="value">{{ getHotelDetails(expense)?.location }}</span>
+                                  </div>
+                                  <div class="detail-row">
+                                    <span class="label">Check-in Date:</span>
+                                    <span class="value">{{ $safeNavigationMigration(getHotelDetails(expense)?.checkInDate) | date:'mediumDate' }}</span>
+                                  </div>
+                                  <div class="detail-row">
+                                    <span class="label">Check-out Date:</span>
+                                    <span class="value">{{ $safeNavigationMigration(getHotelDetails(expense)?.checkOutDate) | date:'mediumDate' }}</span>
+                                  </div>
+                                  <div class="detail-row">
+                                    <span class="label">Total Price:</span>
+                                    <span class="value">{{ expense.totalPrice | currency }}</span>
+                                  </div>
+                                </div>
+                              }
+                              @case (expenseType.FLIGHT) {
+                                <div class="expense-detail-grid">
+                                  <div class="detail-row">
+                                    <span class="label">Airline:</span>
+                                    <span class="value">{{ getFlightDetails(expense)?.airline }}</span>
+                                  </div>
+                                  <div class="detail-row">
+                                    <span class="label">From:</span>
+                                    <span class="value">{{ getFlightDetails(expense)?.departureLocation }}</span>
+                                  </div>
+                                  <div class="detail-row">
+                                    <span class="label">To:</span>
+                                    <span class="value">{{ getFlightDetails(expense)?.arrivalLocation }}</span>
+                                  </div>
+                                  <div class="detail-row">
+                                    <span class="label">Departure:</span>
+                                    <span class="value">{{ $safeNavigationMigration(getFlightDetails(expense)?.departureTime) | date:'medium' }}</span>
+                                  </div>
+                                  <div class="detail-row">
+                                    <span class="label">Arrival:</span>
+                                    <span class="value">{{ $safeNavigationMigration(getFlightDetails(expense)?.arrivalTime) | date:'medium' }}</span>
+                                  </div>
+                                  <div class="detail-row">
+                                    <span class="label">Total Price:</span>
+                                    <span class="value">{{ expense.totalPrice | currency }}</span>
+                                  </div>
+                                </div>
+                              }
+                              @case (expenseType.TAXI) {
+                                <div class="expense-detail-grid">
+                                  <div class="detail-row">
+                                    <span class="label">From:</span>
+                                    <span class="value">{{ getTaxiDetails(expense)?.from || getTaxiDetails(expense)?.fromLocation }}</span>
+                                  </div>
+                                  <div class="detail-row">
+                                    <span class="label">To:</span>
+                                    <span class="value">{{ getTaxiDetails(expense)?.to || getTaxiDetails(expense)?.toLocation }}</span>
+                                  </div>
+                                  <div class="detail-row">
+                                    <span class="label">Date/Time:</span>
+                                    <span class="value">{{ getTaxiDetails(expense)?.dateTime || getTaxiDetails(expense)?.time | date:'medium' }}</span>
+                                  </div>
+                                  <div class="detail-row">
+                                    <span class="label">Total Price:</span>
+                                    <span class="value">{{ expense.totalPrice | currency }}</span>
+                                  </div>
+                                </div>
+                              }
+                            }
+                            @if (canEditTrip()) {
+                              <div class="expense-actions">
+                                <button mat-button color="warn" (click)="deleteExpense(expense.id || 0)">
+                                  <mat-icon>delete</mat-icon> Delete
+                                </button>
+                              </div>
+                            }
+                          </div>
+                        </mat-expansion-panel>
+                      }
+                    </mat-accordion>
+                  </div>
+                }
+              </div>
+            </mat-tab>
+          </mat-tab-group>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  }
 </div>

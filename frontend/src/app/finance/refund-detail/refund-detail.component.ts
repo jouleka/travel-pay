@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
@@ -40,6 +40,7 @@ import { ExpenseType, RefundStatusType } from '../../trips/models/trip.model';
     MatInputModule
   ],
   templateUrl: './refund-detail.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./refund-detail.component.scss']
 })
 export class RefundDetailComponent implements OnInit {

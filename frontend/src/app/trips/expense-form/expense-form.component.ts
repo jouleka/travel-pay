@@ -1,5 +1,5 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
+
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -19,7 +19,6 @@ import { ExpenseType } from '../models/trip.model';
   selector: 'app-expense-form',
   standalone: true,
   imports: [
-    CommonModule,
     RouterModule,
     ReactiveFormsModule,
     MatButtonModule,
@@ -31,8 +30,9 @@ import { ExpenseType } from '../models/trip.model';
     MatProgressSpinnerModule,
     MatSnackBarModule,
     MatSelectModule
-  ],
+],
   templateUrl: './expense-form.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./expense-form.component.scss']
 })
 export class ExpenseFormComponent implements OnInit {

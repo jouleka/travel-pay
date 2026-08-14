@@ -6,45 +6,44 @@
     </mat-card-header>
 
     <mat-card-content>
-      <div *ngIf="currentUser">
-        <p>Welcome, {{ currentUser.username }}!</p>
-        <p>Your roles: {{ currentUser.roles.join(', ') }}</p>
-
-        <div class="role-actions">
-          <ng-container *ngIf="hasRole(userRole)">
-            <h3>Travel Management</h3>
-            <div class="action-buttons">
-              <button mat-raised-button color="primary" routerLink="/trips">
-                <mat-icon>flight</mat-icon> Manage Trips
-              </button>
-              <button mat-raised-button color="primary" routerLink="/trips/new">
-                <mat-icon>add</mat-icon> Create New Trip
-              </button>
-            </div>
-          </ng-container>
-
-          <ng-container *ngIf="hasRole(approverRole)">
-            <h3>Approval Management</h3>
-            <div class="action-buttons">
-              <button mat-raised-button color="accent" routerLink="/approvals">
-                <mat-icon>fact_check</mat-icon> Pending Approvals
-              </button>
-            </div>
-          </ng-container>
-
-          <ng-container *ngIf="hasRole(financeRole)">
-            <h3>Finance Management</h3>
-            <div class="action-buttons">
-              <button mat-raised-button color="warn" routerLink="/finance">
-                <mat-icon>payments</mat-icon> Manage Refunds
-              </button>
-              <button mat-raised-button color="warn" routerLink="/finance/reports">
-                <mat-icon>assessment</mat-icon> Financial Reports
-              </button>
-            </div>
-          </ng-container>
+      @if (currentUser) {
+        <div>
+          <p>Welcome, {{ currentUser.username }}!</p>
+          <p>Your roles: {{ currentUser.roles.join(', ') }}</p>
+          <div class="role-actions">
+            @if (hasRole(userRole)) {
+              <h3>Travel Management</h3>
+              <div class="action-buttons">
+                <button mat-raised-button color="primary" routerLink="/trips">
+                  <mat-icon>flight</mat-icon> Manage Trips
+                </button>
+                <button mat-raised-button color="primary" routerLink="/trips/new">
+                  <mat-icon>add</mat-icon> Create New Trip
+                </button>
+              </div>
+            }
+            @if (hasRole(approverRole)) {
+              <h3>Approval Management</h3>
+              <div class="action-buttons">
+                <button mat-raised-button color="accent" routerLink="/approvals">
+                  <mat-icon>fact_check</mat-icon> Pending Approvals
+                </button>
+              </div>
+            }
+            @if (hasRole(financeRole)) {
+              <h3>Finance Management</h3>
+              <div class="action-buttons">
+                <button mat-raised-button color="warn" routerLink="/finance">
+                  <mat-icon>payments</mat-icon> Manage Refunds
+                </button>
+                <button mat-raised-button color="warn" routerLink="/finance/reports">
+                  <mat-icon>assessment</mat-icon> Financial Reports
+                </button>
+              </div>
+            }
+          </div>
         </div>
-      </div>
+      }
     </mat-card-content>
 
     <mat-card-actions>

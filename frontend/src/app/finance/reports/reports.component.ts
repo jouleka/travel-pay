@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
@@ -38,6 +38,7 @@ import { ExpenseTypeSummary, ReportSummary, ReportData } from '../models/report.
     ReactiveFormsModule
   ],
   templateUrl: './reports.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./reports.component.scss']
 })
 export class ReportsComponent implements OnInit {

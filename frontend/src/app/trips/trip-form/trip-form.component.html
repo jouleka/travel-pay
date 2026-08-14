@@ -5,60 +5,70 @@
     </mat-card-header>
 
     <mat-card-content>
-      <div *ngIf="loading" class="loading-container">
-        <mat-spinner diameter="40"></mat-spinner>
-      </div>
-
-      <form [formGroup]="tripForm" (ngSubmit)="tripForm.valid && onSubmit()" *ngIf="!loading">
-        <div class="form-row">
-          <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Trip Name</mat-label>
-            <input matInput formControlName="name" placeholder="Enter trip name">
-            <mat-error *ngIf="tripForm.get('name')?.hasError('required')">
-              Trip name is required
-            </mat-error>
-            <mat-error *ngIf="tripForm.get('name')?.hasError('maxlength')">
-              Trip name cannot exceed 100 characters
-            </mat-error>
-          </mat-form-field>
+      @if (loading) {
+        <div class="loading-container">
+          <mat-spinner diameter="40"></mat-spinner>
         </div>
+      }
 
-        <div class="form-row date-row">
-          <mat-form-field appearance="outline">
-            <mat-label>Start Date</mat-label>
-            <input matInput [matDatepicker]="startPicker" formControlName="startDate">
-            <mat-datepicker-toggle matSuffix [for]="startPicker"></mat-datepicker-toggle>
-            <mat-datepicker #startPicker></mat-datepicker>
-            <mat-error *ngIf="tripForm.get('startDate')?.hasError('required')">
-              Start date is required
-            </mat-error>
-          </mat-form-field>
-
-          <mat-form-field appearance="outline">
-            <mat-label>End Date</mat-label>
-            <input matInput [matDatepicker]="endPicker" formControlName="endDate">
-            <mat-datepicker-toggle matSuffix [for]="endPicker"></mat-datepicker-toggle>
-            <mat-datepicker #endPicker></mat-datepicker>
-            <mat-error *ngIf="tripForm.get('endDate')?.hasError('required')">
-              End date is required
-            </mat-error>
-          </mat-form-field>
-        </div>
-
-        <div *ngIf="tripForm.hasError('dateRange')" class="date-error">
-          End date must be after start date
-        </div>
-
-        <div class="actions-container">
-          <button mat-button type="button" routerLink="/trips" [disabled]="loading">
-            Cancel
-          </button>
-          <button mat-raised-button color="primary" type="submit"
-                  [disabled]="tripForm.invalid || loading">
-            {{ editMode ? 'Update Trip' : 'Create Trip' }}
-          </button>
-        </div>
-      </form>
+      @if (!loading) {
+        <form [formGroup]="tripForm" (ngSubmit)="tripForm.valid && onSubmit()">
+          <div class="form-row">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Trip Name</mat-label>
+              <input matInput formControlName="name" placeholder="Enter trip name">
+              @if (tripForm.get('name')?.hasError('required')) {
+                <mat-error>
+                  Trip name is required
+                </mat-error>
+              }
+              @if (tripForm.get('name')?.hasError('maxlength')) {
+                <mat-error>
+                  Trip name cannot exceed 100 characters
+                </mat-error>
+              }
+            </mat-form-field>
+          </div>
+          <div class="form-row date-row">
+            <mat-form-field appearance="outline">
+              <mat-label>Start Date</mat-label>
+              <input matInput [matDatepicker]="startPicker" formControlName="startDate">
+              <mat-datepicker-toggle matSuffix [for]="startPicker"></mat-datepicker-toggle>
+              <mat-datepicker #startPicker></mat-datepicker>
+              @if (tripForm.get('startDate')?.hasError('required')) {
+                <mat-error>
+                  Start date is required
+                </mat-error>
+              }
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>End Date</mat-label>
+              <input matInput [matDatepicker]="endPicker" formControlName="endDate">
+              <mat-datepicker-toggle matSuffix [for]="endPicker"></mat-datepicker-toggle>
+              <mat-datepicker #endPicker></mat-datepicker>
+              @if (tripForm.get('endDate')?.hasError('required')) {
+                <mat-error>
+                  End date is required
+                </mat-error>
+              }
+            </mat-form-field>
+          </div>
+          @if (tripForm.hasError('dateRange')) {
+            <div class="date-error">
+              End date must be after start date
+            </div>
+          }
+          <div class="actions-container">
+            <button mat-button type="button" routerLink="/trips" [disabled]="loading">
+              Cancel
+            </button>
+            <button mat-raised-button color="primary" type="submit"
+              [disabled]="tripForm.invalid || loading">
+              {{ editMode ? 'Update Trip' : 'Create Trip' }}
+            </button>
+          </div>
+        </form>
+      }
     </mat-card-content>
 
     <mat-card-actions>

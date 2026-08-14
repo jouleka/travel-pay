@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
@@ -48,6 +48,7 @@ import { ApprovalNote } from '../models/approval.model';
     MatListModule
   ],
   templateUrl: './approval-detail.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./approval-detail.component.scss']
 })
 export class ApprovalDetailComponent implements OnInit {

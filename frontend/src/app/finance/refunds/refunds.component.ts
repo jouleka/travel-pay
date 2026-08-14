@@ -1,5 +1,5 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
+
 import { RouterModule } from '@angular/router';
 import { MatTableModule } from '@angular/material/table';
 import { MatSortModule, Sort } from '@angular/material/sort';
@@ -19,7 +19,6 @@ import { Trip } from '../../trips/models/trip.model';
   selector: 'app-refunds',
   standalone: true,
   imports: [
-    CommonModule,
     RouterModule,
     MatTableModule,
     MatSortModule,
@@ -31,8 +30,9 @@ import { Trip } from '../../trips/models/trip.model';
     MatProgressSpinnerModule,
     MatSnackBarModule,
     MatTooltipModule
-  ],
+],
   templateUrl: './refunds.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./refunds.component.scss']
 })
 export class RefundsComponent implements OnInit {

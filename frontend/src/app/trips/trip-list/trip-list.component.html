@@ -12,88 +12,87 @@
 
   <mat-card>
     <mat-card-content>
-      <div *ngIf="loading" class="loading-container">
-        <mat-spinner diameter="40"></mat-spinner>
-      </div>
+      @if (loading) {
+        <div class="loading-container">
+          <mat-spinner diameter="40"></mat-spinner>
+        </div>
+      }
 
-      <div *ngIf="!loading && trips.length === 0" class="empty-state">
-        <p>You don't have any trips yet. Click the "Create New Trip" button to get started.</p>
-      </div>
+      @if (!loading && trips.length === 0) {
+        <div class="empty-state">
+          <p>You don't have any trips yet. Click the "Create New Trip" button to get started.</p>
+        </div>
+      }
 
-      <div *ngIf="!loading && trips.length > 0" class="table-container">
-        <table mat-table [dataSource]="trips" class="mat-elevation-z2">
-          <!-- Trip Name Column -->
-          <ng-container matColumnDef="name">
-            <th mat-header-cell *matHeaderCellDef>Trip Name</th>
-            <td mat-cell *matCellDef="let trip">
-              <a [routerLink]="['/trips', trip.id]">{{ trip.name }}</a>
-            </td>
-          </ng-container>
-
-          <!-- Start Date Column -->
-          <ng-container matColumnDef="startDate">
-            <th mat-header-cell *matHeaderCellDef>Start Date</th>
-            <td mat-cell *matCellDef="let trip">{{ trip.startDate | date:'mediumDate' }}</td>
-          </ng-container>
-
-          <!-- End Date Column -->
-          <ng-container matColumnDef="endDate">
-            <th mat-header-cell *matHeaderCellDef>End Date</th>
-            <td mat-cell *matCellDef="let trip">{{ trip.endDate | date:'mediumDate' }}</td>
-          </ng-container>
-
-          <!-- Status Column -->
-          <ng-container matColumnDef="status">
-            <th mat-header-cell *matHeaderCellDef>Status</th>
-            <td mat-cell *matCellDef="let trip">
-              <mat-chip [ngClass]="getStatusClass(trip.status)">
-                {{ trip.status.replace('_', ' ') }}
-              </mat-chip>
-            </td>
-          </ng-container>
-
-          <!-- Total Amount Column -->
-          <ng-container matColumnDef="totalExpenses">
-            <th mat-header-cell *matHeaderCellDef>Total Amount</th>
-            <td mat-cell *matCellDef="let trip">{{ trip.totalExpenses | currency }}</td>
-          </ng-container>
-
-          <!-- Actions Column -->
-          <ng-container matColumnDef="actions">
-            <th mat-header-cell *matHeaderCellDef>Actions</th>
-            <td mat-cell *matCellDef="let trip">
-              <button mat-icon-button [routerLink]="['/trips', trip.id]" matTooltip="View Trip">
-                <mat-icon>visibility</mat-icon>
-              </button>
-
-              <button mat-icon-button [routerLink]="['/trips', trip.id, 'edit']"
-                      [disabled]="!canEdit(trip)"
-                      matTooltip="Edit Trip"
-                      [matTooltipDisabled]="!canEdit(trip)">
-                <mat-icon>edit</mat-icon>
-              </button>
-
-              <button mat-icon-button (click)="submitTrip(trip.id)"
-                      [disabled]="!canSubmit(trip)"
-                      matTooltip="Submit for Approval"
-                      [matTooltipDisabled]="!canSubmit(trip)"
-                      *ngIf="trip.status === 'DRAFT'">
-                <mat-icon>send</mat-icon>
-              </button>
-
-              <button mat-icon-button (click)="deleteTrip(trip.id)"
-                      [disabled]="!canEdit(trip)"
-                      matTooltip="Delete Trip"
-                      [matTooltipDisabled]="!canEdit(trip)">
-                <mat-icon>delete</mat-icon>
-              </button>
-            </td>
-          </ng-container>
-
-          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-          <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-        </table>
-      </div>
+      @if (!loading && trips.length > 0) {
+        <div class="table-container">
+          <table mat-table [dataSource]="trips" class="mat-elevation-z2">
+            <!-- Trip Name Column -->
+            <ng-container matColumnDef="name">
+              <th mat-header-cell *matHeaderCellDef>Trip Name</th>
+              <td mat-cell *matCellDef="let trip">
+                <a [routerLink]="['/trips', trip.id]">{{ trip.name }}</a>
+              </td>
+            </ng-container>
+            <!-- Start Date Column -->
+            <ng-container matColumnDef="startDate">
+              <th mat-header-cell *matHeaderCellDef>Start Date</th>
+              <td mat-cell *matCellDef="let trip">{{ trip.startDate | date:'mediumDate' }}</td>
+            </ng-container>
+            <!-- End Date Column -->
+            <ng-container matColumnDef="endDate">
+              <th mat-header-cell *matHeaderCellDef>End Date</th>
+              <td mat-cell *matCellDef="let trip">{{ trip.endDate | date:'mediumDate' }}</td>
+            </ng-container>
+            <!-- Status Column -->
+            <ng-container matColumnDef="status">
+              <th mat-header-cell *matHeaderCellDef>Status</th>
+              <td mat-cell *matCellDef="let trip">
+                <mat-chip [ngClass]="getStatusClass(trip.status)">
+                  {{ trip.status.replace('_', ' ') }}
+                </mat-chip>
+              </td>
+            </ng-container>
+            <!-- Total Amount Column -->
+            <ng-container matColumnDef="totalExpenses">
+              <th mat-header-cell *matHeaderCellDef>Total Amount</th>
+              <td mat-cell *matCellDef="let trip">{{ trip.totalExpenses | currency }}</td>
+            </ng-container>
+            <!-- Actions Column -->
+            <ng-container matColumnDef="actions">
+              <th mat-header-cell *matHeaderCellDef>Actions</th>
+              <td mat-cell *matCellDef="let trip">
+                <button mat-icon-button [routerLink]="['/trips', trip.id]" matTooltip="View Trip">
+                  <mat-icon>visibility</mat-icon>
+                </button>
+                <button mat-icon-button [routerLink]="['/trips', trip.id, 'edit']"
+                  [disabled]="!canEdit(trip)"
+                  matTooltip="Edit Trip"
+                  [matTooltipDisabled]="!canEdit(trip)">
+                  <mat-icon>edit</mat-icon>
+                </button>
+                @if (trip.status === 'DRAFT') {
+                  <button mat-icon-button (click)="submitTrip(trip.id)"
+                    [disabled]="!canSubmit(trip)"
+                    matTooltip="Submit for Approval"
+                    [matTooltipDisabled]="!canSubmit(trip)"
+                    >
+                    <mat-icon>send</mat-icon>
+                  </button>
+                }
+                <button mat-icon-button (click)="deleteTrip(trip.id)"
+                  [disabled]="!canEdit(trip)"
+                  matTooltip="Delete Trip"
+                  [matTooltipDisabled]="!canEdit(trip)">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </td>
+            </ng-container>
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+          </table>
+        </div>
+      }
     </mat-card-content>
   </mat-card>
 </div>

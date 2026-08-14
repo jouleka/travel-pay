@@ -5,122 +5,129 @@
     </button>
   </div>
 
-  <div *ngIf="loading" class="loading-container">
-    <mat-spinner diameter="50"></mat-spinner>
-    <p>Loading trip details...</p>
-  </div>
+  @if (loading) {
+    <div class="loading-container">
+      <mat-spinner diameter="50"></mat-spinner>
+      <p>Loading trip details...</p>
+    </div>
+  }
 
-  <div *ngIf="!loading && refundRequest" class="content">
-    <div class="header">
-      <div class="title-section">
-        <h1>Trip: {{ refundRequest.trip.name }}</h1>
-        <div class="refund-status-chip" [ngClass]="getStatusChipClass(refundRequest.refundStatus.status)">
-          {{ refundRequest.refundStatus.status }}
+  @if (!loading && refundRequest) {
+    <div class="content">
+      <div class="header">
+        <div class="title-section">
+          <h1>Trip: {{ refundRequest.trip.name }}</h1>
+          <div class="refund-status-chip" [ngClass]="getStatusChipClass(refundRequest.refundStatus.status)">
+            {{ refundRequest.refundStatus.status }}
+          </div>
         </div>
+        <p class="dates">{{ formatDate(refundRequest.trip.startDate) }} - {{ formatDate(refundRequest.trip.endDate) }}</p>
       </div>
-      <p class="dates">{{ formatDate(refundRequest.trip.startDate) }} - {{ formatDate(refundRequest.trip.endDate) }}</p>
-    </div>
-
-    <div class="trip-details-card">
-      <mat-card>
-        <mat-card-header>
-          <mat-card-title>Trip Details</mat-card-title>
-        </mat-card-header>
-        <mat-card-content>
-          <div class="info-row">
-            <span class="label">Trip ID:</span>
-            <span class="value">{{ refundRequest.trip.id }}</span>
+      <div class="trip-details-card">
+        <mat-card>
+          <mat-card-header>
+            <mat-card-title>Trip Details</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="info-row">
+              <span class="label">Trip ID:</span>
+              <span class="value">{{ refundRequest.trip.id }}</span>
+            </div>
+            <div class="info-row">
+              <span class="label">Total Amount:</span>
+              <span class="value">{{ formatCurrency(refundRequest.trip.totalExpenses || 0) }}</span>
+            </div>
+            <div class="info-row">
+              <span class="label">Created By:</span>
+              <span class="value">{{ refundRequest.trip.user?.username || 'Unknown' }}</span>
+            </div>
+            <div class="info-row">
+              <span class="label">Status:</span>
+              <span class="value">{{ refundRequest.trip.status }}</span>
+            </div>
+            <div class="info-row">
+              <span class="label">Refund Status:</span>
+              <span class="value">{{ refundRequest.refundStatus.status || 'PENDING' }}</span>
+            </div>
+            @if (refundRequest.refundStatus.financeUser?.username) {
+              <div class="info-row">
+                <span class="label">Finance Officer:</span>
+                <span class="value">{{ refundRequest.refundStatus.financeUser?.username }}</span>
+              </div>
+            }
+            @if (refundRequest.refundStatus.updatedAt) {
+              <div class="info-row">
+                <span class="label">Last Updated:</span>
+                <span class="value">{{ formatDateTime(refundRequest.refundStatus.updatedAt) }}</span>
+              </div>
+            }
+          </mat-card-content>
+        </mat-card>
+      </div>
+      <mat-tab-group>
+        <mat-tab label="Expenses">
+          <div class="expenses-table-container">
+            <table mat-table [dataSource]="refundRequest.trip.expenses" class="mat-elevation-z0 full-width">
+              <!-- Type Column -->
+              <ng-container matColumnDef="type">
+                <th mat-header-cell *matHeaderCellDef>Type</th>
+                <td mat-cell *matCellDef="let expense">{{ getExpenseTypeLabel(expense.type) }}</td>
+              </ng-container>
+              <!-- Details Column -->
+              <ng-container matColumnDef="details">
+                <th mat-header-cell *matHeaderCellDef>Details</th>
+                <td mat-cell *matCellDef="let expense">{{ getExpenseDetails(expense) }}</td>
+              </ng-container>
+              <!-- Amount Column -->
+              <ng-container matColumnDef="amount">
+                <th mat-header-cell *matHeaderCellDef>Amount</th>
+                <td mat-cell *matCellDef="let expense">{{ formatCurrency(expense.totalPrice) }}</td>
+              </ng-container>
+              <tr mat-header-row *matHeaderRowDef="expenseColumns"></tr>
+              <tr mat-row *matRowDef="let row; columns: expenseColumns;"></tr>
+            </table>
           </div>
-          <div class="info-row">
-            <span class="label">Total Amount:</span>
-            <span class="value">{{ formatCurrency(refundRequest.trip.totalExpenses || 0) }}</span>
-          </div>
-          <div class="info-row">
-            <span class="label">Created By:</span>
-            <span class="value">{{ refundRequest.trip.user?.username || 'Unknown' }}</span>
-          </div>
-          <div class="info-row">
-            <span class="label">Status:</span>
-            <span class="value">{{ refundRequest.trip.status }}</span>
-          </div>
-          <div class="info-row">
-            <span class="label">Refund Status:</span>
-            <span class="value">{{ refundRequest.refundStatus.status || 'PENDING' }}</span>
-          </div>
-          <div *ngIf="refundRequest.refundStatus.financeUser?.username" class="info-row">
-            <span class="label">Finance Officer:</span>
-            <span class="value">{{ refundRequest.refundStatus.financeUser?.username }}</span>
-          </div>
-          <div *ngIf="refundRequest.refundStatus.updatedAt" class="info-row">
-            <span class="label">Last Updated:</span>
-            <span class="value">{{ formatDateTime(refundRequest.refundStatus.updatedAt) }}</span>
-          </div>
-        </mat-card-content>
-      </mat-card>
-    </div>
-
-    <mat-tab-group>
-      <mat-tab label="Expenses">
-        <div class="expenses-table-container">
-          <table mat-table [dataSource]="refundRequest.trip.expenses" class="mat-elevation-z0 full-width">
-            <!-- Type Column -->
-            <ng-container matColumnDef="type">
-              <th mat-header-cell *matHeaderCellDef>Type</th>
-              <td mat-cell *matCellDef="let expense">{{ getExpenseTypeLabel(expense.type) }}</td>
-            </ng-container>
-
-            <!-- Details Column -->
-            <ng-container matColumnDef="details">
-              <th mat-header-cell *matHeaderCellDef>Details</th>
-              <td mat-cell *matCellDef="let expense">{{ getExpenseDetails(expense) }}</td>
-            </ng-container>
-
-            <!-- Amount Column -->
-            <ng-container matColumnDef="amount">
-              <th mat-header-cell *matHeaderCellDef>Amount</th>
-              <td mat-cell *matCellDef="let expense">{{ formatCurrency(expense.totalPrice) }}</td>
-            </ng-container>
-
-            <tr mat-header-row *matHeaderRowDef="expenseColumns"></tr>
-            <tr mat-row *matRowDef="let row; columns: expenseColumns;"></tr>
-          </table>
+        </mat-tab>
+      </mat-tab-group>
+      @if (refundRequest.refundStatus.status !== RefundStatusType.REFUNDED) {
+        <div class="actions-section">
+          <mat-card>
+            <mat-card-header>
+              <mat-card-title>Update Refund Status</mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+              <form [formGroup]="noteForm">
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>Add a note (required)</mat-label>
+                  <textarea matInput formControlName="note" rows="3" placeholder="Enter a note about this refund action"></textarea>
+                  @if (noteForm.get('note')?.hasError('required')) {
+                    <mat-error>Note is required</mat-error>
+                  }
+                  @if (noteForm.get('note')?.hasError('maxlength')) {
+                    <mat-error>Note cannot exceed 500 characters</mat-error>
+                  }
+                </mat-form-field>
+              </form>
+            </mat-card-content>
+            <mat-card-actions>
+              <button
+                mat-raised-button
+                color="primary"
+                [disabled]="noteForm.invalid || refundRequest.refundStatus.status === RefundStatusType.IN_PROCESS"
+                (click)="markAsInProcess()">
+                Mark as In Process
+              </button>
+              <button
+                mat-raised-button
+                color="accent"
+                [disabled]="noteForm.invalid"
+                (click)="markAsRefunded()">
+                Mark as Refunded
+              </button>
+            </mat-card-actions>
+          </mat-card>
         </div>
-      </mat-tab>
-    </mat-tab-group>
-
-    <div class="actions-section" *ngIf="refundRequest.refundStatus.status !== RefundStatusType.REFUNDED">
-      <mat-card>
-        <mat-card-header>
-          <mat-card-title>Update Refund Status</mat-card-title>
-        </mat-card-header>
-        <mat-card-content>
-          <form [formGroup]="noteForm">
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Add a note (required)</mat-label>
-              <textarea matInput formControlName="note" rows="3" placeholder="Enter a note about this refund action"></textarea>
-              <mat-error *ngIf="noteForm.get('note')?.hasError('required')">Note is required</mat-error>
-              <mat-error *ngIf="noteForm.get('note')?.hasError('maxlength')">Note cannot exceed 500 characters</mat-error>
-            </mat-form-field>
-          </form>
-        </mat-card-content>
-        <mat-card-actions>
-          <button
-            mat-raised-button
-            color="primary"
-            [disabled]="noteForm.invalid || refundRequest.refundStatus.status === RefundStatusType.IN_PROCESS"
-            (click)="markAsInProcess()">
-            Mark as In Process
-          </button>
-
-          <button
-            mat-raised-button
-            color="accent"
-            [disabled]="noteForm.invalid"
-            (click)="markAsRefunded()">
-            Mark as Refunded
-          </button>
-        </mat-card-actions>
-      </mat-card>
+      }
     </div>
-  </div>
+  }
 </div>

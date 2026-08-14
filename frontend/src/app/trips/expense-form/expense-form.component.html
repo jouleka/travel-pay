@@ -5,254 +5,287 @@
     </mat-card-header>
 
     <mat-card-content>
-      <div *ngIf="loading" class="loading-container">
-        <mat-spinner diameter="40"></mat-spinner>
-      </div>
-
-      <form [formGroup]="expenseForm" (ngSubmit)="expenseForm.valid && onSubmit()" *ngIf="!loading">
-        <div class="form-row">
-          <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Expense Type</mat-label>
-            <mat-select formControlName="type" required>
-              <mat-option *ngFor="let type of expenseTypes" [value]="type">
-                {{ getExpenseTypeLabel(type) }}
-              </mat-option>
-            </mat-select>
-            <mat-error *ngIf="expenseForm.get('type')?.hasError('required')">
-              Expense type is required
-            </mat-error>
-          </mat-form-field>
+      @if (loading) {
+        <div class="loading-container">
+          <mat-spinner diameter="40"></mat-spinner>
         </div>
+      }
 
-        <!-- Car Rental Form -->
-        <div *ngIf="selectedType === 'CAR_RENTAL'" class="expense-details-form">
-          <h3>Car Rental Details</h3>
-
+      @if (!loading) {
+        <form [formGroup]="expenseForm" (ngSubmit)="expenseForm.valid && onSubmit()">
           <div class="form-row">
             <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Car Name</mat-label>
-              <input matInput formControlName="carName" placeholder="Enter car name">
-              <mat-error *ngIf="expenseForm.get('carName')?.hasError('required')">
-                Car name is required
-              </mat-error>
+              <mat-label>Expense Type</mat-label>
+              <mat-select formControlName="type" required>
+                @for (type of expenseTypes; track type) {
+                  <mat-option [value]="type">
+                    {{ getExpenseTypeLabel(type) }}
+                  </mat-option>
+                }
+              </mat-select>
+              @if (expenseForm.get('type')?.hasError('required')) {
+                <mat-error>
+                  Expense type is required
+                </mat-error>
+              }
             </mat-form-field>
           </div>
-
-          <div class="form-row date-time-row">
-            <mat-form-field appearance="outline">
-              <mat-label>Pick-up Date & Time</mat-label>
-              <input matInput [matDatepicker]="pickupDatePicker" formControlName="pickupDateTime">
-              <mat-datepicker-toggle matSuffix [for]="pickupDatePicker"></mat-datepicker-toggle>
-              <mat-datepicker #pickupDatePicker></mat-datepicker>
-              <mat-error *ngIf="expenseForm.get('pickupDateTime')?.hasError('required')">
-                Pick-up date and time is required
-              </mat-error>
-            </mat-form-field>
+          <!-- Car Rental Form -->
+          @if (selectedType === 'CAR_RENTAL') {
+            <div class="expense-details-form">
+              <h3>Car Rental Details</h3>
+              <div class="form-row">
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>Car Name</mat-label>
+                  <input matInput formControlName="carName" placeholder="Enter car name">
+                  @if (expenseForm.get('carName')?.hasError('required')) {
+                    <mat-error>
+                      Car name is required
+                    </mat-error>
+                  }
+                </mat-form-field>
+              </div>
+              <div class="form-row date-time-row">
+                <mat-form-field appearance="outline">
+                  <mat-label>Pick-up Date & Time</mat-label>
+                  <input matInput [matDatepicker]="pickupDatePicker" formControlName="pickupDateTime">
+                  <mat-datepicker-toggle matSuffix [for]="pickupDatePicker"></mat-datepicker-toggle>
+                  <mat-datepicker #pickupDatePicker></mat-datepicker>
+                  @if (expenseForm.get('pickupDateTime')?.hasError('required')) {
+                    <mat-error>
+                      Pick-up date and time is required
+                    </mat-error>
+                  }
+                </mat-form-field>
+              </div>
+              <div class="form-row date-time-row">
+                <mat-form-field appearance="outline">
+                  <mat-label>Drop-off Date & Time</mat-label>
+                  <input matInput [matDatepicker]="dropoffDatePicker" formControlName="dropoffDateTime">
+                  <mat-datepicker-toggle matSuffix [for]="dropoffDatePicker"></mat-datepicker-toggle>
+                  <mat-datepicker #dropoffDatePicker></mat-datepicker>
+                  @if (expenseForm.get('dropoffDateTime')?.hasError('required')) {
+                    <mat-error>
+                      Drop-off date and time is required
+                    </mat-error>
+                  }
+                </mat-form-field>
+              </div>
+              <div class="form-row">
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>Pick-up Location</mat-label>
+                  <input matInput formControlName="pickupLocation" placeholder="Enter pick-up location">
+                  @if (expenseForm.get('pickupLocation')?.hasError('required')) {
+                    <mat-error>
+                      Pick-up location is required
+                    </mat-error>
+                  }
+                </mat-form-field>
+              </div>
+              <div class="form-row">
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>Drop-off Location</mat-label>
+                  <input matInput formControlName="dropoffLocation" placeholder="Enter drop-off location">
+                  @if (expenseForm.get('dropoffLocation')?.hasError('required')) {
+                    <mat-error>
+                      Drop-off location is required
+                    </mat-error>
+                  }
+                </mat-form-field>
+              </div>
+            </div>
+          }
+          <!-- Hotel Form -->
+          @if (selectedType === 'HOTEL') {
+            <div class="expense-details-form">
+              <h3>Hotel Details</h3>
+              <div class="form-row">
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>Hotel Name</mat-label>
+                  <input matInput formControlName="hotelName" placeholder="Enter hotel name">
+                  @if (expenseForm.get('hotelName')?.hasError('required')) {
+                    <mat-error>
+                      Hotel name is required
+                    </mat-error>
+                  }
+                </mat-form-field>
+              </div>
+              <div class="form-row">
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>Location</mat-label>
+                  <input matInput formControlName="location" placeholder="Enter hotel location">
+                  @if (expenseForm.get('location')?.hasError('required')) {
+                    <mat-error>
+                      Location is required
+                    </mat-error>
+                  }
+                </mat-form-field>
+              </div>
+              <div class="form-row date-row">
+                <mat-form-field appearance="outline">
+                  <mat-label>Check-in Date</mat-label>
+                  <input matInput [matDatepicker]="checkInPicker" formControlName="checkInDate">
+                  <mat-datepicker-toggle matSuffix [for]="checkInPicker"></mat-datepicker-toggle>
+                  <mat-datepicker #checkInPicker></mat-datepicker>
+                  @if (expenseForm.get('checkInDate')?.hasError('required')) {
+                    <mat-error>
+                      Check-in date is required
+                    </mat-error>
+                  }
+                </mat-form-field>
+              </div>
+              <div class="form-row date-row">
+                <mat-form-field appearance="outline">
+                  <mat-label>Check-out Date</mat-label>
+                  <input matInput [matDatepicker]="checkOutPicker" formControlName="checkOutDate">
+                  <mat-datepicker-toggle matSuffix [for]="checkOutPicker"></mat-datepicker-toggle>
+                  <mat-datepicker #checkOutPicker></mat-datepicker>
+                  @if (expenseForm.get('checkOutDate')?.hasError('required')) {
+                    <mat-error>
+                      Check-out date is required
+                    </mat-error>
+                  }
+                </mat-form-field>
+              </div>
+            </div>
+          }
+          <!-- Flight Form -->
+          @if (selectedType === 'FLIGHT') {
+            <div class="expense-details-form">
+              <h3>Flight Details</h3>
+              <div class="form-row">
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>Airline</mat-label>
+                  <input matInput formControlName="airline" placeholder="Enter airline name">
+                  @if (expenseForm.get('airline')?.hasError('required')) {
+                    <mat-error>
+                      Airline is required
+                    </mat-error>
+                  }
+                </mat-form-field>
+              </div>
+              <div class="form-row">
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>From</mat-label>
+                  <input matInput formControlName="from" placeholder="Enter departure location">
+                  @if (expenseForm.get('from')?.hasError('required')) {
+                    <mat-error>
+                      Departure location is required
+                    </mat-error>
+                  }
+                </mat-form-field>
+              </div>
+              <div class="form-row">
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>To</mat-label>
+                  <input matInput formControlName="to" placeholder="Enter arrival location">
+                  @if (expenseForm.get('to')?.hasError('required')) {
+                    <mat-error>
+                      Arrival location is required
+                    </mat-error>
+                  }
+                </mat-form-field>
+              </div>
+              <div class="form-row date-time-row">
+                <mat-form-field appearance="outline">
+                  <mat-label>Departure Date & Time</mat-label>
+                  <input matInput [matDatepicker]="departurePicker" formControlName="departureDateTime">
+                  <mat-datepicker-toggle matSuffix [for]="departurePicker"></mat-datepicker-toggle>
+                  <mat-datepicker #departurePicker></mat-datepicker>
+                  @if (expenseForm.get('departureDateTime')?.hasError('required')) {
+                    <mat-error>
+                      Departure date and time is required
+                    </mat-error>
+                  }
+                </mat-form-field>
+              </div>
+              <div class="form-row date-time-row">
+                <mat-form-field appearance="outline">
+                  <mat-label>Arrival Date & Time</mat-label>
+                  <input matInput [matDatepicker]="arrivalPicker" formControlName="arrivalDateTime">
+                  <mat-datepicker-toggle matSuffix [for]="arrivalPicker"></mat-datepicker-toggle>
+                  <mat-datepicker #arrivalPicker></mat-datepicker>
+                  @if (expenseForm.get('arrivalDateTime')?.hasError('required')) {
+                    <mat-error>
+                      Arrival date and time is required
+                    </mat-error>
+                  }
+                </mat-form-field>
+              </div>
+            </div>
+          }
+          <!-- Taxi Form -->
+          @if (selectedType === 'TAXI') {
+            <div class="expense-details-form">
+              <h3>Taxi Details</h3>
+              <div class="form-row">
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>From</mat-label>
+                  <input matInput formControlName="from" placeholder="Enter pick-up location">
+                  @if (expenseForm.get('from')?.hasError('required')) {
+                    <mat-error>
+                      Pick-up location is required
+                    </mat-error>
+                  }
+                </mat-form-field>
+              </div>
+              <div class="form-row">
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>To</mat-label>
+                  <input matInput formControlName="to" placeholder="Enter drop-off location">
+                  @if (expenseForm.get('to')?.hasError('required')) {
+                    <mat-error>
+                      Drop-off location is required
+                    </mat-error>
+                  }
+                </mat-form-field>
+              </div>
+              <div class="form-row date-time-row">
+                <mat-form-field appearance="outline">
+                  <mat-label>Date & Time</mat-label>
+                  <input matInput [matDatepicker]="taxiDatePicker" formControlName="dateTime">
+                  <mat-datepicker-toggle matSuffix [for]="taxiDatePicker"></mat-datepicker-toggle>
+                  <mat-datepicker #taxiDatePicker></mat-datepicker>
+                  @if (expenseForm.get('dateTime')?.hasError('required')) {
+                    <mat-error>
+                      Date and time is required
+                    </mat-error>
+                  }
+                </mat-form-field>
+              </div>
+            </div>
+          }
+          <!-- Common for all expense types -->
+          @if (selectedType) {
+            <div class="form-row">
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Total Price</mat-label>
+                <input matInput type="number" min="0" formControlName="totalPrice" placeholder="Enter total price">
+                <span matTextPrefix>$&nbsp;</span>
+                @if (expenseForm.get('totalPrice')?.hasError('required')) {
+                  <mat-error>
+                    Total price is required
+                  </mat-error>
+                }
+                @if (expenseForm.get('totalPrice')?.hasError('min')) {
+                  <mat-error>
+                    Total price must be positive
+                  </mat-error>
+                }
+              </mat-form-field>
+            </div>
+          }
+          <div class="actions-container">
+            <button mat-button type="button" [routerLink]="['/trips', tripId]" [disabled]="loading">
+              Cancel
+            </button>
+            <button mat-raised-button color="primary" type="submit"
+              [disabled]="expenseForm.invalid || loading">
+              Add Expense
+            </button>
           </div>
-
-          <div class="form-row date-time-row">
-            <mat-form-field appearance="outline">
-              <mat-label>Drop-off Date & Time</mat-label>
-              <input matInput [matDatepicker]="dropoffDatePicker" formControlName="dropoffDateTime">
-              <mat-datepicker-toggle matSuffix [for]="dropoffDatePicker"></mat-datepicker-toggle>
-              <mat-datepicker #dropoffDatePicker></mat-datepicker>
-              <mat-error *ngIf="expenseForm.get('dropoffDateTime')?.hasError('required')">
-                Drop-off date and time is required
-              </mat-error>
-            </mat-form-field>
-          </div>
-
-          <div class="form-row">
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Pick-up Location</mat-label>
-              <input matInput formControlName="pickupLocation" placeholder="Enter pick-up location">
-              <mat-error *ngIf="expenseForm.get('pickupLocation')?.hasError('required')">
-                Pick-up location is required
-              </mat-error>
-            </mat-form-field>
-          </div>
-
-          <div class="form-row">
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Drop-off Location</mat-label>
-              <input matInput formControlName="dropoffLocation" placeholder="Enter drop-off location">
-              <mat-error *ngIf="expenseForm.get('dropoffLocation')?.hasError('required')">
-                Drop-off location is required
-              </mat-error>
-            </mat-form-field>
-          </div>
-        </div>
-
-        <!-- Hotel Form -->
-        <div *ngIf="selectedType === 'HOTEL'" class="expense-details-form">
-          <h3>Hotel Details</h3>
-
-          <div class="form-row">
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Hotel Name</mat-label>
-              <input matInput formControlName="hotelName" placeholder="Enter hotel name">
-              <mat-error *ngIf="expenseForm.get('hotelName')?.hasError('required')">
-                Hotel name is required
-              </mat-error>
-            </mat-form-field>
-          </div>
-
-          <div class="form-row">
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Location</mat-label>
-              <input matInput formControlName="location" placeholder="Enter hotel location">
-              <mat-error *ngIf="expenseForm.get('location')?.hasError('required')">
-                Location is required
-              </mat-error>
-            </mat-form-field>
-          </div>
-
-          <div class="form-row date-row">
-            <mat-form-field appearance="outline">
-              <mat-label>Check-in Date</mat-label>
-              <input matInput [matDatepicker]="checkInPicker" formControlName="checkInDate">
-              <mat-datepicker-toggle matSuffix [for]="checkInPicker"></mat-datepicker-toggle>
-              <mat-datepicker #checkInPicker></mat-datepicker>
-              <mat-error *ngIf="expenseForm.get('checkInDate')?.hasError('required')">
-                Check-in date is required
-              </mat-error>
-            </mat-form-field>
-          </div>
-
-          <div class="form-row date-row">
-            <mat-form-field appearance="outline">
-              <mat-label>Check-out Date</mat-label>
-              <input matInput [matDatepicker]="checkOutPicker" formControlName="checkOutDate">
-              <mat-datepicker-toggle matSuffix [for]="checkOutPicker"></mat-datepicker-toggle>
-              <mat-datepicker #checkOutPicker></mat-datepicker>
-              <mat-error *ngIf="expenseForm.get('checkOutDate')?.hasError('required')">
-                Check-out date is required
-              </mat-error>
-            </mat-form-field>
-          </div>
-        </div>
-
-        <!-- Flight Form -->
-        <div *ngIf="selectedType === 'FLIGHT'" class="expense-details-form">
-          <h3>Flight Details</h3>
-
-          <div class="form-row">
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Airline</mat-label>
-              <input matInput formControlName="airline" placeholder="Enter airline name">
-              <mat-error *ngIf="expenseForm.get('airline')?.hasError('required')">
-                Airline is required
-              </mat-error>
-            </mat-form-field>
-          </div>
-
-          <div class="form-row">
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>From</mat-label>
-              <input matInput formControlName="from" placeholder="Enter departure location">
-              <mat-error *ngIf="expenseForm.get('from')?.hasError('required')">
-                Departure location is required
-              </mat-error>
-            </mat-form-field>
-          </div>
-
-          <div class="form-row">
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>To</mat-label>
-              <input matInput formControlName="to" placeholder="Enter arrival location">
-              <mat-error *ngIf="expenseForm.get('to')?.hasError('required')">
-                Arrival location is required
-              </mat-error>
-            </mat-form-field>
-          </div>
-
-          <div class="form-row date-time-row">
-            <mat-form-field appearance="outline">
-              <mat-label>Departure Date & Time</mat-label>
-              <input matInput [matDatepicker]="departurePicker" formControlName="departureDateTime">
-              <mat-datepicker-toggle matSuffix [for]="departurePicker"></mat-datepicker-toggle>
-              <mat-datepicker #departurePicker></mat-datepicker>
-              <mat-error *ngIf="expenseForm.get('departureDateTime')?.hasError('required')">
-                Departure date and time is required
-              </mat-error>
-            </mat-form-field>
-          </div>
-
-          <div class="form-row date-time-row">
-            <mat-form-field appearance="outline">
-              <mat-label>Arrival Date & Time</mat-label>
-              <input matInput [matDatepicker]="arrivalPicker" formControlName="arrivalDateTime">
-              <mat-datepicker-toggle matSuffix [for]="arrivalPicker"></mat-datepicker-toggle>
-              <mat-datepicker #arrivalPicker></mat-datepicker>
-              <mat-error *ngIf="expenseForm.get('arrivalDateTime')?.hasError('required')">
-                Arrival date and time is required
-              </mat-error>
-            </mat-form-field>
-          </div>
-        </div>
-
-        <!-- Taxi Form -->
-        <div *ngIf="selectedType === 'TAXI'" class="expense-details-form">
-          <h3>Taxi Details</h3>
-
-          <div class="form-row">
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>From</mat-label>
-              <input matInput formControlName="from" placeholder="Enter pick-up location">
-              <mat-error *ngIf="expenseForm.get('from')?.hasError('required')">
-                Pick-up location is required
-              </mat-error>
-            </mat-form-field>
-          </div>
-
-          <div class="form-row">
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>To</mat-label>
-              <input matInput formControlName="to" placeholder="Enter drop-off location">
-              <mat-error *ngIf="expenseForm.get('to')?.hasError('required')">
-                Drop-off location is required
-              </mat-error>
-            </mat-form-field>
-          </div>
-
-          <div class="form-row date-time-row">
-            <mat-form-field appearance="outline">
-              <mat-label>Date & Time</mat-label>
-              <input matInput [matDatepicker]="taxiDatePicker" formControlName="dateTime">
-              <mat-datepicker-toggle matSuffix [for]="taxiDatePicker"></mat-datepicker-toggle>
-              <mat-datepicker #taxiDatePicker></mat-datepicker>
-              <mat-error *ngIf="expenseForm.get('dateTime')?.hasError('required')">
-                Date and time is required
-              </mat-error>
-            </mat-form-field>
-          </div>
-        </div>
-
-        <!-- Common for all expense types -->
-        <div class="form-row" *ngIf="selectedType">
-          <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Total Price</mat-label>
-            <input matInput type="number" min="0" formControlName="totalPrice" placeholder="Enter total price">
-            <span matTextPrefix>$&nbsp;</span>
-            <mat-error *ngIf="expenseForm.get('totalPrice')?.hasError('required')">
-              Total price is required
-            </mat-error>
-            <mat-error *ngIf="expenseForm.get('totalPrice')?.hasError('min')">
-              Total price must be positive
-            </mat-error>
-          </mat-form-field>
-        </div>
-
-        <div class="actions-container">
-          <button mat-button type="button" [routerLink]="['/trips', tripId]" [disabled]="loading">
-            Cancel
-          </button>
-          <button mat-raised-button color="primary" type="submit"
-                  [disabled]="expenseForm.invalid || loading">
-            Add Expense
-          </button>
-        </div>
-      </form>
+        </form>
+      }
     </mat-card-content>
   </mat-card>
 </div>

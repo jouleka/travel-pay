@@ -1,5 +1,5 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
+
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -18,7 +18,6 @@ import { Trip, TripStatus } from '../models/trip.model';
   selector: 'app-trip-form',
   standalone: true,
   imports: [
-    CommonModule,
     RouterModule,
     ReactiveFormsModule,
     MatButtonModule,
@@ -29,8 +28,9 @@ import { Trip, TripStatus } from '../models/trip.model';
     MatIconModule,
     MatProgressSpinnerModule,
     MatSnackBarModule
-  ],
+],
   templateUrl: './trip-form.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./trip-form.component.scss']
 })
 export class TripFormComponent implements OnInit {

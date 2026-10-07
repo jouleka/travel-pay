@@ -1,7 +1,8 @@
-import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { refreshView } from '../../shared/refresh-view';
+import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, inject } from '@angular/core';
 
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { AbstractControl, ValidationErrors, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatDatepickerModule } from '@angular/material/datepicker';
@@ -30,27 +31,27 @@ import { Trip, TripStatus } from '../models/trip.model';
     MatSnackBarModule
 ],
   templateUrl: './trip-form.component.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrls: ['./trip-form.component.scss']
 })
 export class TripFormComponent implements OnInit {
+  private changeDetector = inject(ChangeDetectorRef);
+
+  private fb = inject(FormBuilder);
+  private tripService = inject(TripService);
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private snackBar = inject(MatSnackBar);
+
   tripForm!: FormGroup;
   loading = false;
   editMode = false;
   tripId: number | null = null;
 
-  constructor(
-    private fb: FormBuilder,
-    private tripService: TripService,
-    private route: ActivatedRoute,
-    private router: Router,
-    private snackBar: MatSnackBar
-  ) {}
-
   ngOnInit(): void {
     this.createForm();
 
-    this.route.params.subscribe(params => {
+    this.route.params.pipe(refreshView(this.changeDetector)).subscribe(params => {
       if (params['id']) {
         this.editMode = true;
         this.tripId = +params['id'];
@@ -71,7 +72,7 @@ export class TripFormComponent implements OnInit {
     if (!this.tripId) return;
 
     this.loading = true;
-    this.tripService.getTripById(this.tripId).subscribe({
+    this.tripService.getTripById(this.tripId).pipe(refreshView(this.changeDetector)).subscribe({
       next: (trip) => {
         if (trip.status !== TripStatus.DRAFT) {
           this.snackBar.open('This trip cannot be edited as it has already been submitted.', 'Close', {
@@ -99,7 +100,7 @@ export class TripFormComponent implements OnInit {
     });
   }
 
-  dateRangeValidator(group: FormGroup): { [key: string]: any } | null {
+  dateRangeValidator(group: AbstractControl): ValidationErrors | null {
     const start = group.get('startDate')?.value;
     const end = group.get('endDate')?.value;
 
@@ -116,8 +117,6 @@ export class TripFormComponent implements OnInit {
   }
 
   onSubmit(): void {
-    console.log('Submit button clicked');
-    console.log('Form state:', this.tripForm.value, this.tripForm.valid, this.tripForm.errors);
 
     if (this.tripForm.invalid) {
       Object.keys(this.tripForm.controls).forEach(key => {
@@ -127,7 +126,6 @@ export class TripFormComponent implements OnInit {
       return;
     }
 
-    console.log('Form is valid, proceeding with submission');
     this.loading = true;
     const formValue = this.tripForm.value;
 
@@ -148,7 +146,6 @@ export class TripFormComponent implements OnInit {
       endDate = `${year}-${month}-${day}`;
     }
 
-    console.log('Formatted dates:', startDate, endDate);
 
     const tripData: Partial<Trip> = {
       name: formValue.name,
@@ -157,12 +154,10 @@ export class TripFormComponent implements OnInit {
       status: TripStatus.DRAFT
     };
 
-    console.log('Sending trip data to API:', tripData);
 
     if (this.editMode && this.tripId) {
-      this.tripService.updateTrip(this.tripId, tripData).subscribe({
+      this.tripService.updateTrip(this.tripId, tripData).pipe(refreshView(this.changeDetector)).subscribe({
         next: (trip) => {
-          console.log('Trip updated successfully:', trip);
           this.loading = false;
           this.snackBar.open('Trip updated successfully', 'Close', {
             duration: 3000
@@ -178,10 +173,8 @@ export class TripFormComponent implements OnInit {
         }
       });
     } else {
-      console.log('Calling createTrip with data:', tripData);
-      this.tripService.createTrip(tripData).subscribe({
+      this.tripService.createTrip(tripData).pipe(refreshView(this.changeDetector)).subscribe({
         next: (trip) => {
-          console.log('Trip created successfully:', trip);
           this.loading = false;
           this.snackBar.open('Trip created successfully', 'Close', {
             duration: 3000

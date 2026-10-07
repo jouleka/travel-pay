@@ -15,7 +15,7 @@ import { MatIconModule } from '@angular/material/icon';
     MatIconModule
 ],
   templateUrl: './unauthorized.component.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrls: ['./unauthorized.component.scss']
 })
 export class UnauthorizedComponent {}

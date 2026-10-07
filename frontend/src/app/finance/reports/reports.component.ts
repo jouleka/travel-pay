@@ -1,4 +1,5 @@
-import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { refreshView } from '../../shared/refresh-view';
+import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
@@ -38,10 +39,15 @@ import { ExpenseTypeSummary, ReportSummary, ReportData } from '../models/report.
     ReactiveFormsModule
   ],
   templateUrl: './reports.component.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrls: ['./reports.component.scss']
 })
 export class ReportsComponent implements OnInit {
+  private changeDetector = inject(ChangeDetectorRef);
+
+  private financeService = inject(FinanceService);
+  private snackBar = inject(MatSnackBar);
+
   loading = false;
   reportData: ReportData | null = null;
   reportSummary: ReportSummary | null = null;
@@ -58,11 +64,6 @@ export class ReportsComponent implements OnInit {
   pageSize = 10;
   pageIndex = 0;
   totalTrips = 0;
-
-  constructor(
-    private financeService: FinanceService,
-    private snackBar: MatSnackBar
-  ) {}
 
   ngOnInit(): void {
     // Set default date range (current month)
@@ -92,7 +93,7 @@ export class ReportsComponent implements OnInit {
     const endIso = endDate.toISOString().split('T')[0];
 
     this.loading = true;
-    this.financeService.generateReport(startIso, endIso).subscribe({
+    this.financeService.generateReport(startIso, endIso).pipe(refreshView(this.changeDetector)).subscribe({
       next: (data) => {
         this.reportData = data;
         this.totalTrips = data.trips.length;

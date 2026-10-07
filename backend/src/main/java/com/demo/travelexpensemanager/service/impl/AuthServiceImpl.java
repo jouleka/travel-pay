@@ -77,33 +77,15 @@ public class AuthServiceImpl implements AuthService {
                 signupRequest.getEmail(),
                 encoder.encode(signupRequest.getPassword()));
 
-        Set<String> strRoles = signupRequest.getRole();
-        Set<Role> roles = new HashSet<>();
-
-        if (strRoles == null) {
-            Role userRole = roleRepository.findByName(RoleType.ROLE_USER)
-                    .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-            roles.add(userRole);
-        } else {
-            strRoles.forEach(role -> {
-                switch (role) {
-                    case "approver":
-                        Role approverRole = roleRepository.findByName(RoleType.ROLE_APPROVER)
-                                .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-                        roles.add(approverRole);
-                        break;
-                    case "finance":
-                        Role financeRole = roleRepository.findByName(RoleType.ROLE_FINANCE)
-                                .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-                        roles.add(financeRole);
-                        break;
-                    default:
-                        Role userRole = roleRepository.findByName(RoleType.ROLE_USER)
-                                .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-                        roles.add(userRole);
-                }
-            });
+        // Public registration always creates an ordinary user. Privileged roles
+        // are provisioned only by a trusted database administrator.
+        if (signupRequest.getRole() != null && signupRequest.getRole().stream()
+                .anyMatch(role -> !"user".equalsIgnoreCase(role))) {
+            throw new org.springframework.security.access.AccessDeniedException("Public registration cannot assign privileged roles");
         }
+        Role userRole = roleRepository.findByName(RoleType.ROLE_USER)
+                .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+        Set<Role> roles = new HashSet<>(Set.of(userRole));
 
         user.setRoles(roles);
         userRepository.save(user);

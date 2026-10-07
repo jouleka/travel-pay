@@ -1,3 +1,4 @@
+import { API_BASE_URL } from '../../config/api.config';
 import { HttpInterceptorFn, HttpErrorResponse } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { Router } from '@angular/router';
@@ -9,7 +10,13 @@ export const AuthInterceptor: HttpInterceptorFn = (req, next) => {
   const router = inject(Router);
   const token = authService.getToken();
 
-  if (token) {
+  // HttpClient can also call third-party URLs. Never send the session token
+  // outside the application's configured backend API.
+  const api = new URL(`${API_BASE_URL}/`);
+  const requested = new URL(req.url, globalThis.location.origin);
+  const isBackendRequest = requested.origin === api.origin && requested.pathname.startsWith(api.pathname);
+
+  if (token && isBackendRequest) {
     req = req.clone({
       setHeaders: {
         Authorization: `Bearer ${token}`
@@ -19,8 +26,7 @@ export const AuthInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {
-      if (error.status === 401 || error.status === 403) {
-        console.log('Authentication error:', error.status);
+      if (isBackendRequest && error.status === 401) {
         authService.logout();
         router.navigate(['/auth/login']);
       }

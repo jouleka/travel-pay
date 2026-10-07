@@ -1,4 +1,5 @@
-import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { refreshView } from '../../shared/refresh-view';
+import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, inject } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
@@ -18,7 +19,7 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss'],
   standalone: true,
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     ReactiveFormsModule,
     MatCardModule,
@@ -31,20 +32,22 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 ]
 })
 export class LoginComponent implements OnInit {
+  private changeDetector = inject(ChangeDetectorRef);
+
+  private formBuilder = inject(FormBuilder);
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private authService = inject(AuthService);
+  private snackBar = inject(MatSnackBar);
+
   loginForm!: FormGroup;
   loading = false;
   submitted = false;
   error = '';
-  returnUrl: string = '/';
+  returnUrl = '/';
   hide = true;
 
-  constructor(
-    private formBuilder: FormBuilder,
-    private route: ActivatedRoute,
-    private router: Router,
-    private authService: AuthService,
-    private snackBar: MatSnackBar
-  ) {
+  constructor() {
     if (this.authService.isLoggedIn()) {
       this.router.navigate(['/']);
     }
@@ -75,7 +78,7 @@ export class LoginComponent implements OnInit {
     };
 
     this.authService.login(loginRequest)
-      .subscribe({
+      .pipe(refreshView(this.changeDetector)).subscribe({
         next: () => {
           this.router.navigate([this.returnUrl]);
         },

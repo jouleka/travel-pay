@@ -1,15 +1,17 @@
-import { Injectable } from '@angular/core';
+import { API_BASE_URL } from '../../config/api.config';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Trip } from '../../trips/models/trip.model';
 
-const API_URL = 'http://localhost:8080/api';
+const API_URL = API_BASE_URL;
 
 @Injectable({
   providedIn: 'root'
 })
 export class ApprovalService {
-  constructor(private http: HttpClient) {}
+  private http = inject(HttpClient);
+
 
   getPendingApprovals(): Observable<Trip[]> {
     return this.http.get<Trip[]>(`${API_URL}/approver/trips/pending`);

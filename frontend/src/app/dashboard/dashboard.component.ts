@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, inject } from '@angular/core';
 
 import { Router, RouterModule } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
@@ -17,18 +17,19 @@ import { Role, User } from '../auth/models/auth.model';
     MatIconModule
 ],
   templateUrl: './dashboard.component.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrls: ['./dashboard.component.scss']
 })
 export class DashboardComponent implements OnInit {
+  private authService = inject(AuthService);
+  private router = inject(Router);
+
   currentUser: User | null = null;
 
   // Role constants for the template
   userRole = Role.USER;
   approverRole = Role.APPROVER;
   financeRole = Role.FINANCE;
-
-  constructor(private authService: AuthService, private router: Router) {}
 
   ngOnInit(): void {
     this.currentUser = this.authService.currentUserValue;

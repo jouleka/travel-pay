@@ -1,4 +1,5 @@
-import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { refreshView } from '../../shared/refresh-view';
+import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, inject } from '@angular/core';
 
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -32,26 +33,26 @@ import { ExpenseType } from '../models/trip.model';
     MatSelectModule
 ],
   templateUrl: './expense-form.component.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrls: ['./expense-form.component.scss']
 })
 export class ExpenseFormComponent implements OnInit {
+  private changeDetector = inject(ChangeDetectorRef);
+
+  private fb = inject(FormBuilder);
+  private tripService = inject(TripService);
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private snackBar = inject(MatSnackBar);
+
   expenseForm!: FormGroup;
   loading = false;
   tripId!: number;
   expenseTypes = Object.values(ExpenseType);
   selectedType: ExpenseType | null = null;
 
-  constructor(
-    private fb: FormBuilder,
-    private tripService: TripService,
-    private route: ActivatedRoute,
-    private router: Router,
-    private snackBar: MatSnackBar
-  ) {}
-
   ngOnInit(): void {
-    this.route.paramMap.subscribe(params => {
+    this.route.paramMap.pipe(refreshView(this.changeDetector)).subscribe(params => {
       const id = params.get('id');
       if (id) {
         this.tripId = +id;
@@ -69,7 +70,7 @@ export class ExpenseFormComponent implements OnInit {
     });
 
     // Listen for type changes to update the form
-    this.expenseForm.get('type')?.valueChanges.subscribe(type => {
+    this.expenseForm.get('type')?.valueChanges.pipe(refreshView(this.changeDetector)).subscribe(type => {
       this.selectedType = type;
       this.updateFormForType(type);
     });
@@ -142,7 +143,7 @@ export class ExpenseFormComponent implements OnInit {
         if (formValue.dropoffDateTime instanceof Date) {
           formValue.dropoffDateTime = this.formatDateTime(formValue.dropoffDateTime);
         }
-        this.tripService.addCarRental(this.tripId, formValue).subscribe(this.handleResponse);
+        this.tripService.addCarRental(this.tripId, formValue).pipe(refreshView(this.changeDetector)).subscribe(this.handleResponse);
         break;
 
       case ExpenseType.HOTEL:
@@ -152,7 +153,7 @@ export class ExpenseFormComponent implements OnInit {
         if (formValue.checkOutDate instanceof Date) {
           formValue.checkOutDate = this.formatDate(formValue.checkOutDate);
         }
-        this.tripService.addHotel(this.tripId, formValue).subscribe(this.handleResponse);
+        this.tripService.addHotel(this.tripId, formValue).pipe(refreshView(this.changeDetector)).subscribe(this.handleResponse);
         break;
 
       case ExpenseType.FLIGHT:
@@ -162,14 +163,14 @@ export class ExpenseFormComponent implements OnInit {
         if (formValue.arrivalDateTime instanceof Date) {
           formValue.arrivalDateTime = this.formatDateTime(formValue.arrivalDateTime);
         }
-        this.tripService.addFlight(this.tripId, formValue).subscribe(this.handleResponse);
+        this.tripService.addFlight(this.tripId, formValue).pipe(refreshView(this.changeDetector)).subscribe(this.handleResponse);
         break;
 
       case ExpenseType.TAXI:
         if (formValue.dateTime instanceof Date) {
           formValue.dateTime = this.formatDateTime(formValue.dateTime);
         }
-        this.tripService.addTaxi(this.tripId, formValue).subscribe(this.handleResponse);
+        this.tripService.addTaxi(this.tripId, formValue).pipe(refreshView(this.changeDetector)).subscribe(this.handleResponse);
         break;
     }
   }
@@ -183,7 +184,7 @@ export class ExpenseFormComponent implements OnInit {
       });
       this.router.navigate(['/trips', this.tripId]);
     },
-    error: (error: any) => {
+    error: (error: unknown) => {
       console.error('Error adding expense', error);
       this.loading = false;
       this.snackBar.open('Error adding expense. Please try again.', 'Close', {

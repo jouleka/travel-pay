@@ -1,4 +1,5 @@
-import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { refreshView } from '../../shared/refresh-view';
+import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
@@ -44,10 +45,17 @@ import {
     MatExpansionModule
   ],
   templateUrl: './trip-detail.component.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrls: ['./trip-detail.component.scss']
 })
 export class TripDetailComponent implements OnInit {
+  private changeDetector = inject(ChangeDetectorRef);
+
+  private tripService = inject(TripService);
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private snackBar = inject(MatSnackBar);
+
   trip: Trip | null = null;
   loading = true;
   tripId: number | null = null;
@@ -57,15 +65,8 @@ export class TripDetailComponent implements OnInit {
   tripStatus = TripStatus;
   expenseType = ExpenseType;
 
-  constructor(
-    private tripService: TripService,
-    private route: ActivatedRoute,
-    private router: Router,
-    private snackBar: MatSnackBar
-  ) {}
-
   ngOnInit(): void {
-    this.route.paramMap.subscribe(params => {
+    this.route.paramMap.pipe(refreshView(this.changeDetector)).subscribe(params => {
       const id = params.get('id');
       if (id) {
         this.tripId = +id;
@@ -80,7 +81,7 @@ export class TripDetailComponent implements OnInit {
     if (!this.tripId) return;
 
     this.loading = true;
-    this.tripService.getTripById(this.tripId).subscribe({
+    this.tripService.getTripById(this.tripId).pipe(refreshView(this.changeDetector)).subscribe({
       next: (trip) => {
         if (trip.totalExpenses === undefined || trip.totalExpenses === null) {
           trip.totalExpenses = trip.expenses.reduce((sum, expense) => sum + expense.totalPrice, 0);
@@ -108,7 +109,7 @@ export class TripDetailComponent implements OnInit {
     if (!this.tripId) return;
 
     if (confirm('Are you sure you want to submit this trip for approval? You will not be able to make any further changes.')) {
-      this.tripService.submitTripForApproval(this.tripId).subscribe({
+      this.tripService.submitTripForApproval(this.tripId).pipe(refreshView(this.changeDetector)).subscribe({
         next: (trip) => {
           this.trip = trip;
           this.snackBar.open('Trip submitted for approval successfully', 'Close', {
@@ -129,7 +130,7 @@ export class TripDetailComponent implements OnInit {
     if (!this.tripId) return;
 
     if (confirm('Are you sure you want to delete this expense?')) {
-      this.tripService.deleteExpense(this.tripId, expenseId).subscribe({
+      this.tripService.deleteExpense(this.tripId, expenseId).pipe(refreshView(this.changeDetector)).subscribe({
         next: () => {
           this.loadTrip();
           this.snackBar.open('Expense deleted successfully', 'Close', {

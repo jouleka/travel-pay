@@ -1,4 +1,5 @@
 package com.demo.travelexpensemanager.service.impl;
+import com.demo.travelexpensemanager.security.TripAccessPolicy;
 
 import com.demo.travelexpensemanager.dto.request.CarRentalRequest;
 import com.demo.travelexpensemanager.dto.request.FlightRequest;
@@ -229,9 +230,7 @@ public class ExpenseServiceImpl implements ExpenseService {
     }
 
     private void validateExpenseAccess(Trip trip, User currentUser) {
-        if (isEndUser(currentUser) && !trip.getUser().getId().equals(currentUser.getId())) {
-            throw new UnauthorizedException("You don't have permission to access expenses for this trip");
-        }
+        TripAccessPolicy.requireReadAccess(trip, currentUser);
     }
 
     private void validateExpenseAddAccess(Trip trip, User currentUser) {
@@ -256,14 +255,6 @@ public class ExpenseServiceImpl implements ExpenseService {
         if (trip.getStatus() != TripStatus.DRAFT) {
             throw new UnauthorizedException("Expenses can only be edited when trip is in DRAFT status");
         }
-    }
-
-    private boolean isEndUser(User user) {
-        return user.getRoles().stream()
-                .noneMatch(role ->
-                        role.getName().name().equals("ROLE_APPROVER") ||
-                                role.getName().name().equals("ROLE_FINANCE")
-                );
     }
 
     private ExpenseResponse convertToExpenseResponse(Expense expense) {

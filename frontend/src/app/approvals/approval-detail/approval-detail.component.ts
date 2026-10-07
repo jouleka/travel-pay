@@ -1,11 +1,12 @@
-import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { refreshView } from '../../shared/refresh-view';
+import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatChipsModule } from '@angular/material/chips';
-import { MatDialogModule, MatDialog } from '@angular/material/dialog';
+import { MatDialogModule } from '@angular/material/dialog';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
@@ -48,10 +49,18 @@ import { ApprovalNote } from '../models/approval.model';
     MatListModule
   ],
   templateUrl: './approval-detail.component.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrls: ['./approval-detail.component.scss']
 })
 export class ApprovalDetailComponent implements OnInit {
+  private changeDetector = inject(ChangeDetectorRef);
+
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private approvalService = inject(ApprovalService);
+  private fb = inject(FormBuilder);
+  private snackBar = inject(MatSnackBar);
+
   trip: Trip | null = null;
   loading = true;
   tripId!: number;
@@ -59,17 +68,9 @@ export class ApprovalDetailComponent implements OnInit {
   noteForm!: FormGroup;
   submitting = false;
 
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private approvalService: ApprovalService,
-    private fb: FormBuilder,
-    private snackBar: MatSnackBar
-  ) {}
-
   ngOnInit(): void {
     this.createNoteForm();
-    this.route.params.subscribe(params => {
+    this.route.params.pipe(refreshView(this.changeDetector)).subscribe(params => {
       if (params['id']) {
         this.tripId = +params['id'];
         this.loadTrip();
@@ -85,7 +86,7 @@ export class ApprovalDetailComponent implements OnInit {
 
   loadTrip(): void {
     this.loading = true;
-    this.approvalService.getTripForApproval(this.tripId).subscribe({
+    this.approvalService.getTripForApproval(this.tripId).pipe(refreshView(this.changeDetector)).subscribe({
       next: (trip) => {
         this.trip = trip;
         this.notes = [];
@@ -132,8 +133,8 @@ export class ApprovalDetailComponent implements OnInit {
     }
   }
 
-  isCarRental(details: any): details is CarRental {
-    return details &&
+  isCarRental(details: unknown): details is CarRental {
+    return typeof details === 'object' && details !== null &&
       'carName' in details &&
       'pickupDateTime' in details &&
       'dropoffDateTime' in details &&
@@ -141,16 +142,16 @@ export class ApprovalDetailComponent implements OnInit {
       'dropoffLocation' in details;
   }
 
-  isHotel(details: any): details is Hotel {
-    return details &&
+  isHotel(details: unknown): details is Hotel {
+    return typeof details === 'object' && details !== null &&
       'hotelName' in details &&
       'location' in details &&
       'checkInDate' in details &&
       'checkOutDate' in details;
   }
 
-  isFlight(details: any): details is Flight {
-    return details &&
+  isFlight(details: unknown): details is Flight {
+    return typeof details === 'object' && details !== null &&
       'airline' in details &&
       'from' in details &&
       'to' in details &&
@@ -158,8 +159,8 @@ export class ApprovalDetailComponent implements OnInit {
       'arrivalDateTime' in details;
   }
 
-  isTaxi(details: any): details is Taxi {
-    return details &&
+  isTaxi(details: unknown): details is Taxi {
+    return typeof details === 'object' && details !== null &&
       'from' in details &&
       'to' in details &&
       'dateTime' in details;
@@ -171,7 +172,7 @@ export class ApprovalDetailComponent implements OnInit {
     this.submitting = true;
     const note = this.noteForm.value.note || undefined;
 
-    this.approvalService.approveTrip(this.tripId, note).subscribe({
+    this.approvalService.approveTrip(this.tripId, note).pipe(refreshView(this.changeDetector)).subscribe({
       next: (trip) => {
         this.snackBar.open('Trip approved successfully', 'Close', {
           duration: 3000
@@ -198,7 +199,7 @@ export class ApprovalDetailComponent implements OnInit {
     this.submitting = true;
     const note = this.noteForm.value.note || undefined;
 
-    this.approvalService.rejectTrip(this.tripId, note).subscribe({
+    this.approvalService.rejectTrip(this.tripId, note).pipe(refreshView(this.changeDetector)).subscribe({
       next: (trip) => {
         this.snackBar.open('Trip rejected', 'Close', {
           duration: 3000

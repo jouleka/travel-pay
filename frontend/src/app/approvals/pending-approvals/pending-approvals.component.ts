@@ -1,4 +1,5 @@
-import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { refreshView } from '../../shared/refresh-view';
+import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { MatTableModule } from '@angular/material/table';
@@ -31,10 +32,15 @@ import { Trip } from '../../trips/models/trip.model';
     MatSnackBarModule
   ],
   templateUrl: './pending-approvals.component.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrls: ['./pending-approvals.component.scss']
 })
 export class PendingApprovalsComponent implements OnInit {
+  private changeDetector = inject(ChangeDetectorRef);
+
+  private approvalService = inject(ApprovalService);
+  private snackBar = inject(MatSnackBar);
+
   pendingApprovals: Trip[] = [];
   filteredApprovals: Trip[] = [];
   displayedColumns: string[] = ['id', 'name', 'startDate', 'endDate', 'totalExpenses', 'actions'];
@@ -44,18 +50,13 @@ export class PendingApprovalsComponent implements OnInit {
   pageIndex = 0;
   totalTrips = 0;
 
-  constructor(
-    private approvalService: ApprovalService,
-    private snackBar: MatSnackBar
-  ) {}
-
   ngOnInit(): void {
     this.loadPendingApprovals();
   }
 
   loadPendingApprovals(): void {
     this.loading = true;
-    this.approvalService.getPendingApprovals().subscribe({
+    this.approvalService.getPendingApprovals().pipe(refreshView(this.changeDetector)).subscribe({
       next: (trips) => {
         this.pendingApprovals = trips;
         this.totalTrips = trips.length;

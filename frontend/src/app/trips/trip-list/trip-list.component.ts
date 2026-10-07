@@ -1,4 +1,5 @@
-import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { refreshView } from '../../shared/refresh-view';
+import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { MatTableModule } from '@angular/material/table';
@@ -31,15 +32,17 @@ import { Trip, TripStatus } from '../models/trip.model';
     MatProgressSpinnerModule
   ],
   templateUrl: './trip-list.component.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrls: ['./trip-list.component.scss']
 })
 export class TripListComponent implements OnInit {
+  private changeDetector = inject(ChangeDetectorRef);
+
+  private tripService = inject(TripService);
+
   trips: Trip[] = [];
   loading = true;
   displayedColumns: string[] = ['name', 'startDate', 'endDate', 'status', 'totalExpenses', 'actions'];
-
-  constructor(private tripService: TripService) {}
 
   ngOnInit(): void {
     this.loadTrips();
@@ -47,7 +50,7 @@ export class TripListComponent implements OnInit {
 
   loadTrips(): void {
     this.loading = true;
-    this.tripService.getUserTrips().subscribe({
+    this.tripService.getUserTrips().pipe(refreshView(this.changeDetector)).subscribe({
       next: (data) => {
         this.trips = data;
         this.loading = false;
@@ -83,7 +86,7 @@ export class TripListComponent implements OnInit {
   }
 
   submitTrip(id: number): void {
-    this.tripService.submitTripForApproval(id).subscribe({
+    this.tripService.submitTripForApproval(id).pipe(refreshView(this.changeDetector)).subscribe({
       next: () => {
         this.loadTrips();
       },
@@ -95,7 +98,7 @@ export class TripListComponent implements OnInit {
 
   deleteTrip(id: number): void {
     if (confirm('Are you sure you want to delete this trip?')) {
-      this.tripService.deleteTrip(id).subscribe({
+      this.tripService.deleteTrip(id).pipe(refreshView(this.changeDetector)).subscribe({
         next: () => {
           this.loadTrips();
         },

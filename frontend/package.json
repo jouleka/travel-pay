@@ -6,43 +6,41 @@
     "start": "ng serve",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test",
+    "test": "ng test --watch=false",
     "lint": "ng lint"
   },
   "private": true,
   "dependencies": {
-    "@angular/animations": "^22.1.2",
-    "@angular/cdk": "^22.1.2",
-    "@angular/common": "^22.1.2",
-    "@angular/compiler": "^22.1.2",
-    "@angular/core": "^22.1.2",
-    "@angular/forms": "^22.1.2",
-    "@angular/material": "^22.1.2",
-    "@angular/platform-browser": "^22.1.2",
-    "@angular/platform-browser-dynamic": "^22.1.2",
-    "@angular/router": "^22.1.2",
+    "@angular/animations": "22.2.1",
+    "@angular/cdk": "22.2.2",
+    "@angular/common": "22.2.1",
+    "@angular/compiler": "22.2.1",
+    "@angular/core": "22.2.1",
+    "@angular/forms": "22.2.1",
+    "@angular/material": "22.2.2",
+    "@angular/platform-browser": "22.2.1",
+    "@angular/platform-browser-dynamic": "22.2.1",
+    "@angular/router": "22.2.1",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
     "zone.js": "~0.15.0"
   },
   "devDependencies": {
-    "@angular-devkit/build-angular": "^22.1.4",
-    "@angular/cli": "^22.1.4",
-    "@angular/compiler-cli": "^22.1.2",
-    "@types/jasmine": "~5.1.0",
+    "@angular/cli": "22.2.2",
+    "@angular/compiler-cli": "22.2.1",
     "angular-eslint": "^22.1.0",
     "eslint": "^9.22.0",
     "istanbul-lib-instrument": "^6.0.3",
-    "jasmine-core": "~5.6.0",
-    "karma": "~6.4.0",
-    "karma-chrome-launcher": "~3.2.0",
-    "karma-coverage": "~2.2.0",
-    "karma-jasmine": "~5.1.0",
-    "karma-jasmine-html-reporter": "~2.1.0",
     "typescript": "~6.0.3",
-    "typescript-eslint": "^8.67.0"
+    "typescript-eslint": "^8.67.0",
+    "@angular/build": "22.2.2",
+    "vitest": "4.1.11",
+    "jsdom": "27.4.0"
   },
   "overrides": {
     "uuid": "11.1.1"
+  },
+  "engines": {
+    "node": ">=24.0.0"
   }
 }

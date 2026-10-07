@@ -1,16 +1,19 @@
-import { Injectable } from '@angular/core';
+import { API_BASE_URL } from '../../config/api.config';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Trip, Expense, ExpenseType, CarRental, Hotel, Flight, Taxi } from '../models/trip.model';
 
-const API_URL = 'http://localhost:8080/api/trips';
-const EXPENSES_API_URL = 'http://localhost:8080/api/expenses';
+const API_URL = `${API_BASE_URL}/trips`;
+const EXPENSES_API_URL = `${API_BASE_URL}/expenses`;
 
 @Injectable({
   providedIn: 'root'
 })
 export class TripService {
-  constructor(private http: HttpClient) {
+  private http = inject(HttpClient);
+
+  constructor() {
     console.log('TripService initialized with API_URL:', API_URL);
     console.log('Expenses API URL:', EXPENSES_API_URL);
   }

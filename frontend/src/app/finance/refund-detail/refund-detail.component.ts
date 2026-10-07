@@ -1,4 +1,5 @@
-import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { refreshView } from '../../shared/refresh-view';
+import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
@@ -17,7 +18,7 @@ import { MatInputModule } from '@angular/material/input';
 
 import { FinanceService } from '../services/finance.service';
 import { RefundRequest } from '../models/refund.model';
-import { ExpenseType, RefundStatusType } from '../../trips/models/trip.model';
+import { Expense, ExpenseType, RefundStatusType } from '../../trips/models/trip.model';
 
 @Component({
   selector: 'app-refund-detail',
@@ -40,10 +41,18 @@ import { ExpenseType, RefundStatusType } from '../../trips/models/trip.model';
     MatInputModule
   ],
   templateUrl: './refund-detail.component.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrls: ['./refund-detail.component.scss']
 })
 export class RefundDetailComponent implements OnInit {
+  private changeDetector = inject(ChangeDetectorRef);
+
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private financeService = inject(FinanceService);
+  private dialog = inject(MatDialog);
+  private snackBar = inject(MatSnackBar);
+
   tripId!: number;
   refundRequest?: RefundRequest;
   loading = true;
@@ -53,16 +62,8 @@ export class RefundDetailComponent implements OnInit {
   });
   RefundStatusType = RefundStatusType;
 
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private financeService: FinanceService,
-    private dialog: MatDialog,
-    private snackBar: MatSnackBar
-  ) {}
-
   ngOnInit(): void {
-    this.route.paramMap.subscribe(params => {
+    this.route.paramMap.pipe(refreshView(this.changeDetector)).subscribe(params => {
       const idParam = params.get('id');
       if (idParam) {
         this.tripId = +idParam;
@@ -75,7 +76,7 @@ export class RefundDetailComponent implements OnInit {
 
   loadTripDetails(): void {
     this.loading = true;
-    this.financeService.getTripWithRefundStatus(this.tripId).subscribe({
+    this.financeService.getTripWithRefundStatus(this.tripId).pipe(refreshView(this.changeDetector)).subscribe({
       next: (data) => {
         this.refundRequest = data;
         this.loading = false;
@@ -101,7 +102,7 @@ export class RefundDetailComponent implements OnInit {
     }
 
     const note = this.noteForm.get('note')?.value;
-    this.financeService.markAsInProcess(this.tripId, note || undefined).subscribe({
+    this.financeService.markAsInProcess(this.tripId, note || undefined).pipe(refreshView(this.changeDetector)).subscribe({
       next: () => {
         this.snackBar.open('Trip marked as in process', 'Close', {
           duration: 3000
@@ -128,7 +129,7 @@ export class RefundDetailComponent implements OnInit {
     }
 
     const note = this.noteForm.get('note')?.value;
-    this.financeService.markAsRefunded(this.tripId, note || undefined).subscribe({
+    this.financeService.markAsRefunded(this.tripId, note || undefined).pipe(refreshView(this.changeDetector)).subscribe({
       next: () => {
         this.snackBar.open('Trip marked as refunded', 'Close', {
           duration: 3000
@@ -176,15 +177,17 @@ export class RefundDetailComponent implements OnInit {
     }
   }
 
-  getExpenseDetails(expense: any): string {
+  getExpenseDetails(expense: Expense): string {
     try {
       if (!expense.details && expense.type === ExpenseType.TAXI) {
-        if (expense.fromLocation && expense.toLocation) {
+        if ('fromLocation' in expense && 'toLocation' in expense && expense.fromLocation && expense.toLocation) {
           return `${expense.fromLocation} to ${expense.toLocation}`;
         }
       }
 
-      const details = expense.details || {};
+      const rawDetails: unknown = typeof expense.details === 'string' ? JSON.parse(expense.details) : expense.details;
+      const details: Record<string, unknown> = typeof rawDetails === 'object' && rawDetails !== null
+        ? rawDetails as Record<string, unknown> : {};
 
       switch (expense.type) {
         case ExpenseType.CAR_RENTAL:

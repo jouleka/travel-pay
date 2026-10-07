@@ -1,4 +1,5 @@
-import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { refreshView } from '../../shared/refresh-view';
+import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, inject } from '@angular/core';
 
 import { RouterModule } from '@angular/router';
 import { MatTableModule } from '@angular/material/table';
@@ -32,10 +33,15 @@ import { Trip } from '../../trips/models/trip.model';
     MatTooltipModule
 ],
   templateUrl: './refunds.component.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrls: ['./refunds.component.scss']
 })
 export class RefundsComponent implements OnInit {
+  private changeDetector = inject(ChangeDetectorRef);
+
+  private financeService = inject(FinanceService);
+  private snackBar = inject(MatSnackBar);
+
   approvedTrips: Trip[] = [];
   filteredTrips: Trip[] = [];
   displayedColumns: string[] = ['id', 'name', 'startDate', 'endDate', 'totalExpenses', 'actions'];
@@ -46,18 +52,13 @@ export class RefundsComponent implements OnInit {
   pageIndex = 0;
   totalTrips = 0;
 
-  constructor(
-    private financeService: FinanceService,
-    private snackBar: MatSnackBar
-  ) {}
-
   ngOnInit(): void {
     this.loadApprovedTrips();
   }
 
   loadApprovedTrips(): void {
     this.loading = true;
-    this.financeService.getApprovedTrips().subscribe({
+    this.financeService.getApprovedTrips().pipe(refreshView(this.changeDetector)).subscribe({
       next: (trips) => {
         this.approvedTrips = trips;
         this.totalTrips = trips.length;

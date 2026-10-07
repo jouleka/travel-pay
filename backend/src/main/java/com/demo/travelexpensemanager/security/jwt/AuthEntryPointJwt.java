@@ -1,6 +1,6 @@
 package com.demo.travelexpensemanager.security.jwt;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
@@ -33,7 +33,7 @@ public class AuthEntryPointJwt implements AuthenticationEntryPoint {
         body.put("message", authException.getMessage());
         body.put("path", request.getServletPath());
 
-        final ObjectMapper mapper = new ObjectMapper();
+        final JsonMapper mapper = JsonMapper.builder().build();
         mapper.writeValue(response.getOutputStream(), body);
     }
 }

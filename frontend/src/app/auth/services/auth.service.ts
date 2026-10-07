@@ -1,10 +1,11 @@
-import { Injectable } from '@angular/core';
+import { API_BASE_URL } from '../../config/api.config';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { BehaviorSubject, Observable, of } from 'rxjs';
-import { catchError, map, tap } from 'rxjs/operators';
+import { BehaviorSubject, Observable } from 'rxjs';
+import { tap } from 'rxjs/operators';
 import { JwtResponse, LoginRequest, User } from '../models/auth.model';
 
-const AUTH_API = 'http://localhost:8080/api/auth/';
+const AUTH_API = `${API_BASE_URL}/auth/`;
 const TOKEN_KEY = 'auth-token';
 const USER_KEY = 'auth-user';
 
@@ -16,10 +17,12 @@ const httpOptions = {
   providedIn: 'root'
 })
 export class AuthService {
+  private http = inject(HttpClient);
+
   private currentUserSubject: BehaviorSubject<User | null>;
   public currentUser: Observable<User | null>;
 
-  constructor(private http: HttpClient) {
+  constructor() {
     this.currentUserSubject = new BehaviorSubject<User | null>(this.getUserFromStorage());
     this.currentUser = this.currentUserSubject.asObservable();
   }
@@ -45,8 +48,7 @@ export class AuthService {
             email: response.email,
             roles: response.roles
           });
-        }),
-        catchError(this.handleError<JwtResponse>('login'))
+        })
       );
   }
 
@@ -73,13 +75,26 @@ export class AuthService {
   getUserFromStorage(): User | null {
     const user = localStorage.getItem(USER_KEY);
     if (user) {
-      return JSON.parse(user);
+      try {
+        const parsed: unknown = JSON.parse(user);
+        if (typeof parsed === 'object' && parsed !== null && 'roles' in parsed
+          && Array.isArray(parsed.roles) && parsed.roles.every(role => typeof role === 'string')
+          && 'id' in parsed && typeof parsed.id === 'number'
+          && 'username' in parsed && typeof parsed.username === 'string'
+          && 'email' in parsed && typeof parsed.email === 'string') {
+          return parsed as User;
+        }
+      } catch {
+        // Treat corrupt persisted state as signed out, never as a trusted role.
+      }
+      localStorage.removeItem(USER_KEY);
     }
+    localStorage.removeItem(TOKEN_KEY);
     return null;
   }
 
   isLoggedIn(): boolean {
-    return !!this.getToken();
+    return !!this.getToken() && this.currentUserValue !== null;
   }
 
   hasRole(role: string): boolean {
@@ -90,10 +105,4 @@ export class AuthService {
     return user.roles.includes(role);
   }
 
-  private handleError<T>(operation = 'operation', result?: T) {
-    return (error: any): Observable<T> => {
-      console.error(`${operation} failed: ${error.message}`);
-      return of(result as T);
-    };
-  }
 }

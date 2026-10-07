@@ -9,6 +9,7 @@ import com.demo.travelexpensemanager.model.enums.TripStatus;
 import com.demo.travelexpensemanager.repository.TripRepository;
 import com.demo.travelexpensemanager.repository.RefundStatusRepository;
 import com.demo.travelexpensemanager.service.TripService;
+import com.demo.travelexpensemanager.security.TripAccessPolicy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -103,26 +104,18 @@ public class TripServiceImpl implements TripService {
     }
 
     private void validateTripAccess(Trip trip, User currentUser) {
-        // End users can only access their own trips
-        if (isEndUser(currentUser) && !trip.getUser().getId().equals(currentUser.getId())) {
-            throw new UnauthorizedException("You don't have permission to access this trip");
-        }
+        TripAccessPolicy.requireReadAccess(trip, currentUser);
     }
 
     private void validateTripEditAccess(Trip trip, User currentUser) {
-        validateTripAccess(trip, currentUser);
+        // Read privileges for approval/finance never grant ownership of another user's draft.
+        if (!trip.getUser().getId().equals(currentUser.getId())) {
+            throw new UnauthorizedException("You don't have permission to modify this trip");
+        }
 
         if (trip.getStatus() != TripStatus.DRAFT) {
             throw new UnauthorizedException("Trip can only be edited when in DRAFT status");
         }
-    }
-
-    private boolean isEndUser(User user) {
-        return user.getRoles().stream()
-                .noneMatch(role ->
-                        role.getName().name().equals("ROLE_APPROVER") ||
-                                role.getName().name().equals("ROLE_FINANCE")
-                );
     }
 
     TripResponse convertToTripResponse(Trip trip) {
